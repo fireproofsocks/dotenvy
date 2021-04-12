@@ -1,5 +1,5 @@
 defmodule DotenvyTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   import Dotenvy
   import Mox
@@ -32,7 +32,7 @@ defmodule DotenvyTest do
 
     test "last file overwrites previous values" do
       assert {:ok, %{"A" => "alpha", "B" => "ball"}} =
-               source(["test/support/files/a.env", "test/support/files/b.env"])
+               source(["test/support/files/a.env", "test/support/files/b.env"], vars: %{})
     end
 
     test "sets system env vars" do

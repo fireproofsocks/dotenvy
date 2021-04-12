@@ -6,7 +6,9 @@
 [![License](https://img.shields.io/hexpm/l/dotenvy.svg)](https://hex.pm/packages/dotenvy)
 [![Last Updated](https://img.shields.io/github/last-commit/fireproofsocks/dotenvy.svg)](https://github.com/fireproofsocks/dotenvy/commits/master)
 
-Dotenvy is an Elixir implementation of the original [dotenv](https://github.com/bkeepers/dotenv) package. It assists in reading and setting environment variables.
+`Dotenvy` is an Elixir implementation of the original [dotenv](https://github.com/bkeepers/dotenv) package, used for setting and reading configuration variables, compatible with mix and releases.
+
+[Dotenv file format](docs/dotenv-file-format.md)
 
 ## Installation
 

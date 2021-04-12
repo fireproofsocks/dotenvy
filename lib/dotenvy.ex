@@ -1,6 +1,6 @@
 defmodule Dotenvy do
   @moduledoc """
-  `Dotenvy` is an Elixir implementation of the original [dotenv](https://github.com/bkeepers/dotenv) package.
+  `Dotenvy` is an Elixir implementation of the original [dotenv](https://github.com/bkeepers/dotenv) Ruby gem.
 
   It assists in setting environment variables in ways that are compatible with both
   mix releases and with runtime configuration using conventions that should be familiar
@@ -94,7 +94,16 @@ defmodule Dotenvy do
   variable is set, but it will return a `nil` if the value is an empty string.
   See `Dotenvy.Transformer` for more details.
 
+  ## Note for Mix Tasks
 
+  If you have authored your own Mix tasks, you must ensure that they are loading
+  application configuration in a way that is compatible with the runtime config.
+  A good way to do this is to include `Mix.Task.run("app.config")`, e.g.
+
+      def run(_args) do
+        Mix.Task.run("app.config")
+        # ...
+      end
   """
   import Dotenvy.Transformer
 
@@ -106,9 +115,13 @@ defmodule Dotenvy do
   A parser implementation should receive the `contents` read from a file,
   a map of `vars` (with string keys, as would come from `System.get_env/0`),
   and a keyword list of `opts`.
+
+  This callback is provided to help facilitate testing. See `Dotenvy.Parser`
+  for the default implementation.
   """
   @callback parse(contents :: binary(), vars :: map(), opts :: keyword()) ::
               {:ok, map()} | {:error, any()}
+
   @doc """
   Attempts to read the given system environment `variable`; if it exists, its
   value is converted to the given `type`. If the variable is not found, the
@@ -127,7 +140,7 @@ defmodule Dotenvy do
       iex> env("NOT_SET", :boolean, %{not: "converted"})
       %{not: "converted"}
   """
-  @spec env(variable :: binary(), type :: atom(), default :: any()) :: any()
+  @spec env(variable :: binary(), type :: atom(), default :: any()) :: any() | no_return()
   def env(variable, type, default \\ nil) do
     variable
     |> System.fetch_env()
@@ -149,7 +162,7 @@ defmodule Dotenvy do
       iex> env!("ENABLED", :boolean)
       true
   """
-  @spec env!(variable :: binary(), type :: atom()) :: any()
+  @spec env!(variable :: binary(), type :: atom()) :: any() | no_return()
   def env!(variable, type) do
     variable
     |> System.fetch_env!()
@@ -201,7 +214,7 @@ defmodule Dotenvy do
   """
 
   @spec source(files :: binary() | [binary()], opts :: keyword()) ::
-          {:ok, map()} | {:error, any()}
+          {:ok, %{optional(String.t()) => String.t()}} | {:error, any()}
   def source(files, opts \\ [])
 
   def source(file, opts) when is_binary(file), do: source([file], opts)
@@ -221,6 +234,8 @@ defmodule Dotenvy do
   @doc """
   As `source/2`, but returns map on success or raises on error.
   """
+  @spec source!(files :: binary() | [binary()], opts :: keyword()) ::
+          %{optional(String.t()) => String.t()} | no_return()
   def source!(files, opts \\ [])
 
   def source!(file, opts) when is_binary(file), do: source!([file], opts)

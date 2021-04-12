@@ -38,8 +38,9 @@ defmodule Dotenvy.MixProject do
 
   defp description do
     """
-    Dotenvy is an Elixir implementation of the original [dotenv](https://github.com/bkeepers/dotenv) package.
-    It assists in reading and setting environment variables for runtime configuration.
+    Dotenvy is an Elixir implementation of the original [dotenv](https://github.com/bkeepers/dotenv)
+    Ruby gem, compatible with Mix and releases. It assists in reading and setting environment variables
+    for runtime configuration.
     """
   end
 
