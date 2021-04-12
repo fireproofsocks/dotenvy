@@ -1,0 +1,9 @@
+# To install these versions use 
+# asdf install
+# 
+# Note: you may need to clear out your deps/ and _build/ directories and 
+# re-run `mix deps.get` to force retrieval and compilation of appropriate packages
+# for your versions.
+
+elixir 1.11.4-otp-23
+erlang 23.3
