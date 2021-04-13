@@ -2,108 +2,15 @@ defmodule Dotenvy do
   @moduledoc """
   `Dotenvy` is an Elixir implementation of the original [dotenv](https://github.com/bkeepers/dotenv) Ruby gem.
 
-  It assists in setting environment variables in ways that are compatible with both
-  mix releases and with runtime configuration using conventions that should be familiar
-  to developers coming from other languages. Conveniences for reading the variables
-  and converting thier values are included (See `Dotenvy/env!/2`, `Dotenvy.env/3`,
-  and `Dotenvy.Transformer.to/2`).
+  It is designed to help the development of applications following the principles of
+  the [12-factor app](https://12factor.net/) and its recommendation to store
+  configuration in the environment.
 
   Unlike other configuration helpers, `Dotenvy` enforces no convention for the naming
-  of your files: you may name your configuration files whatever you wish.  `.env` and
-  its variants is a common choice, but `Dotenvy` does not have opinions.  You must
-  only pass file paths as arguments to the `Dotenvy.source/2` or `Dotenvy.source!/2`
-  functions.
+  of your files: you may name your configuration files whatever you wish.  `.env` is
+  a common choice, but `Dotenvy` does not have opinions.
 
-  ## Usage Suggestion
-
-  `Dotenvy` is designed to help help set up your application _at runtime_. However,
-  saying "at runtime" isn't specific enough: an application's configuration must be
-  bootstrapped _before_ it can actually start.  Although there are other places
-  where `Dotenvy` may prove useful, it was designed with the `config/runtime.exs`
-  in mind: that's where it helps make the hand-off from system environment variables
-  to the application configuration in the cleanest, most declarative way possible.
-
-  ### `.env` for environment-specific config
-
-  It is possible to use _only_ a `config.exs` and and `runtime.exs` file to configure
-  many Elixir applications: let the `.env` files handle any differences between environments.
-  Consider the following setup:
-
-  #### `config/config.exs`
-
-      # compile-time config
-      import Config
-
-      config :myapp,
-        ecto_repos: [MyApp.Repo]
-
-      config :myapp, MyApp.Repo,
-        migration_timestamps: [
-          type: :utc_datetime,
-          inserted_at: :created_at
-        ]
-
-  #### `config/runtime.exs`
-
-      import Config
-      import Dotenvy
-
-      source([".env", ".env.\#{config_env()}"])
-
-      config :myapp, MyApp.Repo,
-        database: env!("DATABASE", :string),
-        username: env!("USERNAME", :string),
-        password: env!("PASSWORD", :string),
-        hostname: env!("HOSTNAME", :string),
-        pool_size: env!("POOL_SIZE", :integer),
-        adapter: env("ADAPTER", :module, Ecto.Adapters.Postgres),
-        pool: env!("POOL", :module?)
-
-  #### `.env`
-
-        DATABASE=myapp_dev
-        USERNAME=myuser
-        PASSWORD=mypassword
-        HOSTNAME=localhost
-        POOL_SIZE=10
-        POOL=
-
-
-  #### `.env.test`
-
-        DATABASE=myapp_test
-        USERNAME=myuser
-        PASSWORD=mypassword
-        HOSTNAME=localhost
-        POOL_SIZE=10
-        POOL=Ecto.Adapters.SQL.Sandbox
-
-  The above setup would expect `.env` to be in the `.gitignore`.  The above example
-  demonstrates developer settings appropriate for local development, but a production
-  deployment would only differ in its _values_: the shape of the file would be the same.
-
-  The `.env.test` file is loaded when running tests, so its values override any of the
-  values set in the `.env`.
-
-  By using `Dotenvy.env!/2`, there is a strong contract with the environment: the
-  system running this app _must_ have the designated environment variables set somehow,
-  otherwise this app will not start (and a specific error will be raised).
-
-  Using the nil-able variants of the type-casting (those ending with `?`) is an easy
-  way to defer to default values: `env!("POOL", :module?)` requires that the `POOL`
-  variable is set, but it will return a `nil` if the value is an empty string.
-  See `Dotenvy.Transformer` for more details.
-
-  ## Note for Mix Tasks
-
-  If you have authored your own Mix tasks, you must ensure that they are loading
-  application configuration in a way that is compatible with the runtime config.
-  A good way to do this is to include `Mix.Task.run("app.config")`, e.g.
-
-      def run(_args) do
-        Mix.Task.run("app.config")
-        # ...
-      end
+  See the [strategies](docs/strategies.md) for examples of various use cases.
   """
   import Dotenvy.Transformer
 
@@ -123,15 +30,18 @@ defmodule Dotenvy do
               {:ok, map()} | {:error, any()}
 
   @doc """
-  Attempts to read the given system environment `variable`; if it exists, its
-  value is converted to the given `type`. If the variable is not found, the
-  provided `default` is returned.
+  Reads a system environment variable and converts its output or returns a default value.
 
-  The `default` value will **not** be converted: it will be returned as-is.
+  If the given system environment `variable` is *set*, its value is converted to
+  the given `type`. The `default` value is _only_ used when the system environment
+  variable is _not_ set; the `default` value is retur as-is, without conversion.
   This allows greater control of the output.
 
   Although this relies on `System.fetch_env/1`, it may still raise an error
-  if an unsupported `type` is provided.
+  if an unsupported `type` is provided or if non-empty values are required.
+
+  The conversion is delegated to `Dotenvy.Transformer.to/2` -- see its documentation
+  for a list of supported types.
 
   ## Examples
 
@@ -139,9 +49,14 @@ defmodule Dotenvy do
       5433
       iex> env("NOT_SET", :boolean, %{not: "converted"})
       %{not: "converted"}
+      iex> System.put_env("HOST", "")
+      iex> env("HOST", :string!, "localhost")
+      ** (Dotenvy.Transformer.Error) non-empty value required
   """
   @spec env(variable :: binary(), type :: atom(), default :: any()) :: any() | no_return()
-  def env(variable, type, default \\ nil) do
+  def env(variable, type \\ :string, default \\ nil)
+
+  def env(variable, type, default) do
     variable
     |> System.fetch_env()
     |> case do
@@ -152,8 +67,13 @@ defmodule Dotenvy do
 
   @doc """
   Reads the given system environment `variable` and converts its value to the given
-  `type`. This relies on `System.fetch_env!/1` so it will raise if a variable is
-  not set.
+  `type`.
+
+  This relies on `System.fetch_env!/1` so it will raise if a variable is
+  not set or if empty values are encounted when non-empty values are required.
+
+  The conversion is delegated to `Dotenvy.Transformer.to/2` -- see its documentation
+  for a list of supported types.
 
   ## Examples
 
@@ -163,6 +83,8 @@ defmodule Dotenvy do
       true
   """
   @spec env!(variable :: binary(), type :: atom()) :: any() | no_return()
+  def env!(variable, type \\ :string)
+
   def env!(variable, type) do
     variable
     |> System.fetch_env!()
@@ -179,21 +101,23 @@ defmodule Dotenvy do
 
   ## Options
 
-  - `:side_effect` an arity 1 function called after the successful parsing of each of the given files.
-    The default is `&System.put_env/1`, which will have the effect of setting system environment variables based on
-    the results of the file parsing.
   - `:overwrite?` boolean indicating whether or not values parsed from provided `.env` files should
-    overwrite existing system environment variables. Default: `false`
-  - `:parser` module that parses the given file(s). Overridable for testing.
-    Default: `Dotenv.Parser`
+    overwrite existing system environment variables. It is recommended to keep this `false`:
+    setting it to `true` means that you cannot set variables on the command line, e.g.
+    `LOG_LEVEL=debug iex -S mix` Default: `false`
+
+  - `:parser` module that implements `c:Dotenvy.parse/3` callback. Default: `Dotenvy.Parser`
+
   - `:require_files` specifies which of the given `files` (if any) *must* be present.
     When `true`, all the listed files must exist.
     When `false`, none of the listed files must exist.
     When some of the files are required and some are optional, provide a list
-    specifying which files are required.
+    specifying which files are required. Default: `false`
+
   - `:side_effect` an arity 1 function called after the successful parsing of each of the given files.
     The default is `&System.put_env/1`, which will have the effect of setting system environment variables based on
     the results of the file parsing.
+
   - `:vars` a map with string keys representing the starting pool of variables.
     Default: output of `System.get_env/0`.
 

@@ -7,6 +7,11 @@ defmodule DotenvyTest do
   setup :verify_on_exit!
 
   describe "env/3" do
+    test "default type is string", %{test: test} do
+      System.put_env("TEST_VALUE", "#{test}")
+      assert "#{test}" == env("TEST_VALUE")
+    end
+
     test "returns default when variable not set" do
       assert "some-default" = env("DOES_NOT_EXIST", :string, "some-default")
     end
@@ -18,6 +23,11 @@ defmodule DotenvyTest do
   end
 
   describe "env!/2" do
+    test "default type is string", %{test: test} do
+      System.put_env("TEST_VALUE", "#{test}")
+      assert "#{test}" == env!("TEST_VALUE")
+    end
+
     test "raises when variable not set" do
       assert_raise ArgumentError, fn ->
         env!("DOES_NOT_EXIST", :string!)
