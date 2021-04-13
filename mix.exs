@@ -32,15 +32,16 @@ defmodule Dotenvy.MixProject do
     [
       "README.md",
       "CHANGELOG.md",
-      "docs/dotenv-file-format.md"
+      "docs/dotenv-file-format.md",
+      "docs/strategies.md"
     ]
   end
 
   defp description do
     """
-    Dotenvy is an Elixir implementation of the original [dotenv](https://github.com/bkeepers/dotenv)
-    Ruby gem, compatible with Mix and releases. It assists in reading and setting environment variables
-    for runtime configuration.
+    Dotenvy is an Elixir implementation of the original dotenv Ruby gem, compatible
+    with mix and releases. It is designed to facilitate runtime configuration per the
+    guidelines of the 12-factor App.
     """
   end
 
