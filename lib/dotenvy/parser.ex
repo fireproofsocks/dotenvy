@@ -1,8 +1,8 @@
 defmodule Dotenvy.Parser do
   @moduledoc """
   This module handles the parsing of the contents of `.env` files into maps with
-  string keys. This implementation cleaves closely to the original [dotenv](https://github.com/bkeepers/dotenv)
-  package, but it is not a direct match (by design).
+  string keys. See [Dotenv File Format](docs/dotenv-file-format.md) for details
+  on the supported file format.
 
   See the docs for details on the supported file format.
 
