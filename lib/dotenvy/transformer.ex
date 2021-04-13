@@ -1,24 +1,27 @@
 defmodule Dotenvy.Transformer do
   @moduledoc """
-  Helps cast string values read from the System into values usable by the app.
+  This module provides function for converting string values to specific Elixir data types.
 
-  Remember: conversion is necessary because system ENV values are _always_ strings.
+  These conversions were designed to operate on system environment variables which are
+  _always_ stored as string binaries.
   """
 
   defmodule Error do
     @moduledoc false
-    defexception message: "required value"
+    defexception message: "non-empty value required"
   end
 
   @doc """
   Converts strings into Elixir data types with support for nil-able values.
 
-  Each type determines how to interpret the incoming string as well as how to
-  interpret an empty string. E.g. when the `type` is `:integer`, an empty string
-  is considered a `0`.
+  Each type determines how to interpret the incoming string, e.g. when the `type`
+  is `:integer`, an empty string is considered a `0`; when `:integer?` is the `type`,
+  and empty string is converted to `nil`.
 
-  Use a `?` suffix when an empty string should be considered `nil` (a.k.a. a "nullable" value).
-  Use a `!` suffix when an empty string is not allowed. Use this when values are required.
+  Remember:
+
+  - Use a `?` suffix when an empty string should be considered `nil` (a.k.a. a "nullable" value).
+  - Use a `!` suffix when an empty string is not allowed. Use this when values are required.
 
   ## Types
 
@@ -66,7 +69,7 @@ defmodule Dotenvy.Transformer do
       iex> to("5432", :integer)
       5432
   """
-
+  @spec to(str :: binary(), type :: atom) :: any()
   def to(str, :atom) when is_binary(str) do
     str
     |> String.trim_leading(":")
