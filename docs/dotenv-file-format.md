@@ -1,6 +1,9 @@
 # Dotenv File Format
 
-This implementation cleaves closely to the original [dotenv](https://github.com/bkeepers/dotenv) package, but it is not a direct match (by design).
+`.env` files (a.k.a. "dotenv") store key-value pairs in a format descended from
+simple bash files that exported environment variables.
+
+This implementation cleaves closely to format described by the original [dotenv](https://github.com/bkeepers/dotenv) package, but it is not a direct match (by design).
 
 Typically, a dotenv (`.env`) file is formatted into simple key-value pairs:
 
@@ -14,23 +17,21 @@ You may add `export` in front of each line so you can `source` the file in bash 
 
 ## Variable Names
 
-For the sake of portability (and sanity), environment variable names must
-consist solely of letters, digits, and the &gt;underscore&lt; ( `_` ) and
-must not begin with a digit. In regex-speak:
+For the sake of portability (and sanity), environment variable names must consist solely of letters, digits, and the underscore ( `_` ) and must not begin with a digit. In regex-speak:
 
     [a-zA-Z_]+[a-zA-Z0-9_]*
 
 ### Example variable names
 
-    DATABASE_URL
-    foobar
+    DATABASE_URL  # ok  
+    foobar        # ok  
     NO-WORK       # <-- invalid !!!
     ÜBER          # <-- invalid !!!
     2MUCH         # <-- invalid !!!
 
 ## Values
 
-Values are what's to the right of the equals sign. They may be quoted.
+Values are what lie to the right of the equals sign. They may be quoted.
 Using single quotes will prevent variables from being interpolated.
 
     SIMPLE=xyz123
@@ -41,30 +42,25 @@ Using single quotes will prevent variables from being interpolated.
     e.g. a private SSH key
     """
 
-### Escape Sequences
+## Escape Sequences
 
-When wrapped in quotes, the following character strings will be interpreted
-(i.e. escaped) as specific codepoints in the same way you would expect if the
-values were assigned inside a script.
+The following character strings will be interpreted (i.e. escaped) as specific codepoints in the same way you would expect if the values were assigned inside a script. Remember: when a text file is read, it is read as a series of utf8 encoded code points.
 
-- `\n` Linefeed (aka newline); -> codepoint `10`
-- `\r` Carriage return; -> codepoint `13`
-- `\t` Tab; -> codepoint `9`
-- `\f` Form feed; -> codepoint `12`
-- `\b` Backspace; -> codepoint `92`
-- `\"` Double-quote; -> codepoint `34`
-- `\'` Single-quote; -> codepoint `39`
-- `\\` Backslash; -> codepoint `92`
+- `\n` Linefeed (aka newline); `<<92, 110>>` -> `<<10>>`
+- `\r` Carriage return; `<<92, 114>>` -> `<<13>>`
+- `\t` Tab; -> `<<92, 116>>` -> `<<9>>`
+- `\f` Form feed; -> `<<92, 102>>` -> `<<12>>`
+- `\b` Backspace; -> `<<92, 98>>` -> `<<8>>`
+- `\"` Double-quote; ->  `<<92, 34>>` -> `<<34>>`
+- `\'` Single-quote; -> `<<92, 39>>` -> `<<39>>`
+- `\\` Backslash; -> `<<92, 92>>` -> `<<92>>`
 - `\uFFFF` Unicode escape (4 hex characters to denote the codepoint)
 
-If a backslash precedes any other character, that character will be interpretted
-literally: the backslash will essentially be ignored and removed from output.
+If a backslash precedes any other character, that character will be interpretted literally: the backslash will be ignored and removed from output.
 
 ### Interpolation (a.k.a. Variable Substitution)
 
-Values left unquoted or wrapped in double-quotes will interpolate variables
-that are in the the `${VAR}` syntax. This can be useful to reference existing
-system ENV values or to reference values previously set in a parsed file.
+Values left unquoted or wrapped in double-quotes will interpolate variables in the the `${VAR}` syntax. This can be useful for referencing existing system environment variables or to reference varaibles previously parsed.
 
 For example:
 
@@ -72,9 +68,6 @@ For example:
     EMAIL=${USER}@example.org
     DATABASE_URL="postgres://${USER}@localhost/my_database"
     CACHE_DIR=${PWD}/cache
-
-If a value must retain `${}` in its output and should not be substituted with
-a value, wrap it in *single quotes* (see below).
 
 Multi-line values (e.g. private keys) can use the triple-quoted heredoc syntax:
 
@@ -90,7 +83,7 @@ Multi-line values (e.g. private keys) can use the triple-quoted heredoc syntax:
 
 If your values must retain `${}` in their output, wrap the value in single quotes, e.g.:
 
-    PASSWORD='!@\\nG0${k}k'
+    PASSWORD='!@G0${k}k'
     MESSAGE_TEMPLATE='''
         Hello ${PERSON},
 
@@ -99,8 +92,7 @@ If your values must retain `${}` in their output, wrap the value in single quote
 
 ## Comments
 
-The hash-tag `#` symbol denotes comments, either on their own line or at the end
-of a line, but not inside quotes.
+The hash-tag `#` symbol denotes a comment when on its own line or when it follows a quoted value.  It is not treated as a comment when it appears within quotes.
 
     # This is a comment
     SECRET_KEY=YOURSECRETKEYGOESHERE # also a comment
