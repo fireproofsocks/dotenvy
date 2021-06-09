@@ -86,7 +86,7 @@ defmodule Dotenvy do
   Internally, this behaves like `System.fetch_env!/1`: it will raise if a variable is
   not set or if empty values are encounted when non-empty values are required.
 
-  The conversion is delegated to `Dotenvy.Transformer.to/2` -- see its documentation
+  The conversion is delegated to `Dotenvy.Transformer.to!/2` -- see its documentation
   for a list of supported types.
 
   ## Examples
