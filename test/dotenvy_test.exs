@@ -6,19 +6,14 @@ defmodule DotenvyTest do
 
   setup :verify_on_exit!
 
-  describe "env/3" do
-    test "default type is string", %{test: test} do
-      System.put_env("TEST_VALUE", "#{test}")
-      assert "#{test}" == env("TEST_VALUE")
-    end
-
+  describe "env!/3" do
     test "returns default when variable not set" do
-      assert "some-default" = env("DOES_NOT_EXIST", :string, "some-default")
+      assert "some-default" = env!("DOES_NOT_EXIST", :string, "some-default")
     end
 
     test "returns value when env set", %{test: test} do
       System.put_env("TEST_VALUE", "#{test}")
-      assert "#{test}" == env("TEST_VALUE", :string, nil)
+      assert "#{test}" == env!("TEST_VALUE", :string, nil)
     end
   end
 
@@ -29,7 +24,7 @@ defmodule DotenvyTest do
     end
 
     test "raises when variable not set" do
-      assert_raise ArgumentError, fn ->
+      assert_raise RuntimeError, fn ->
         env!("DOES_NOT_EXIST", :string!)
       end
     end
@@ -54,6 +49,13 @@ defmodule DotenvyTest do
       assert {:ok, _} =
                source(["test/support/files/a.env", "test/support/files/b.env"],
                  require_files: ["test/support/files/a.env", "test/support/files/b.env"]
+               )
+    end
+
+    test "error when :require_files references files not in input" do
+      assert {:error, _} =
+               source(["test/support/files/a.env", "test/support/files/b.env"],
+                 require_files: ["test/support/files/c.env"]
                )
     end
 

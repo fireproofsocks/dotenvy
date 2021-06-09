@@ -1,9 +1,9 @@
 defmodule Dotenvy.Transformer do
   @moduledoc """
-  This module provides function for converting string values to specific Elixir data types.
+  This module provides functionality for converting string values to specific Elixir data types.
 
-  These conversions were designed to operate on system environment variables which are
-  _always_ stored as string binaries.
+  These conversions were designed to operate on system environment variables, which
+  _always_ store string binaries.
   """
 
   defmodule Error do
@@ -37,6 +37,7 @@ defmodule Dotenvy.Transformer do
 
   - `:charlist` - converts string to charlist.
   - `:charlist?` - converts string to charlist. Empty string will be considered `nil`.
+  - `:charlist!` - as above, but an empty string will raise.
 
   - `:integer` - converts a string to an integer. An empty string will be considered `0`.
   - `:integer?` - as above, but an empty string will be considered `nil`.
@@ -46,7 +47,7 @@ defmodule Dotenvy.Transformer do
   - `:float?` - as above, but an empty string will be considered `nil`.
   - `:float!` - as above, but an empty string will raise.
 
-  - `:existing_atom` - converts into an existing atom. Raises on error if the atom does not exist.
+  - `:existing_atom` - converts into an existing atom. Raises error if the atom does not exist.
   - `:existing_atom?` - as above, but an empty string will be considered `nil`.
   - `:existing_atom!` - as above, but an empty string will raise.
 
@@ -54,34 +55,34 @@ defmodule Dotenvy.Transformer do
   - `:module?` - as above, but an empty string will be considered `nil`.
   - `:module!` - as above, but an empty string will raise.
 
-  - `:string` - no conversion
+  - `:string` - no conversion (default)
   - `:string?` - empty strings will be considered `nil`.
   - `:string!` - as above, but an empty string will raise.
 
   ## Examples
 
-      iex> to("debug", :atom)
+      iex> to!("debug", :atom)
       :debug
-      iex> to("", :boolean)
+      iex> to!("", :boolean)
       false
-      iex> to("", :boolean?)
+      iex> to!("", :boolean?)
       nil
-      iex> to("5432", :integer)
+      iex> to!("5432", :integer)
       5432
   """
-  @spec to(str :: binary(), type :: atom) :: any()
-  def to(str, :atom) when is_binary(str) do
+  @spec to!(str :: binary(), type :: atom) :: any()
+  def to!(str, :atom) when is_binary(str) do
     str
     |> String.trim_leading(":")
     |> String.to_atom()
   end
 
-  def to("", :atom?), do: nil
-  def to(str, :atom?), do: to(str, :atom)
-  def to("", :atom!), do: raise(Error)
-  def to(str, :atom!), do: to(str, :atom)
+  def to!("", :atom?), do: nil
+  def to!(str, :atom?), do: to!(str, :atom)
+  def to!("", :atom!), do: raise(Error)
+  def to!(str, :atom!), do: to!(str, :atom)
 
-  def to(str, :boolean) when is_binary(str) do
+  def to!(str, :boolean) when is_binary(str) do
     str
     |> String.downcase()
     |> case do
@@ -92,59 +93,61 @@ defmodule Dotenvy.Transformer do
     end
   end
 
-  def to("", :boolean?), do: nil
-  def to(str, :boolean?), do: to(str, :boolean)
-  def to("", :boolean!), do: raise(Error)
-  def to(str, :boolean!), do: to(str, :boolean)
+  def to!("", :boolean?), do: nil
+  def to!(str, :boolean?), do: to!(str, :boolean)
+  def to!("", :boolean!), do: raise(Error)
+  def to!(str, :boolean!), do: to!(str, :boolean)
 
-  def to(str, :charlist) when is_binary(str), do: to_charlist(str)
+  def to!(str, :charlist) when is_binary(str), do: to_charlist(str)
 
-  def to("", :charlist?), do: nil
-  def to(str, :charlist?), do: to(str, :charlist)
-  def to("", :charlist!), do: raise(Error)
-  def to(str, :charlist!), do: to(str, :charlist)
+  def to!("", :charlist?), do: nil
+  def to!(str, :charlist?), do: to!(str, :charlist)
+  def to!("", :charlist!), do: raise(Error)
+  def to!(str, :charlist!), do: to!(str, :charlist)
 
-  def to(str, :existing_atom) when is_binary(str) do
+  def to!(str, :existing_atom) when is_binary(str) do
     str
     |> String.trim_leading(":")
     |> String.to_existing_atom()
+  rescue
+    _ -> reraise(Error, "#{inspect(str)}: not an existing atom", __STACKTRACE__)
   end
 
-  def to("", :existing_atom?), do: nil
-  def to(str, :existing_atom?), do: to(str, :existing_atom)
-  def to("", :existing_atom!), do: raise(Error)
-  def to(str, :existing_atom!), do: to(str, :existing_atom)
+  def to!("", :existing_atom?), do: nil
+  def to!(str, :existing_atom?), do: to!(str, :existing_atom)
+  def to!("", :existing_atom!), do: raise(Error)
+  def to!(str, :existing_atom!), do: to!(str, :existing_atom)
 
-  def to("", :float), do: 0
-  def to(str, :float) when is_binary(str), do: String.to_float(str)
-  def to("", :float?), do: nil
-  def to(str, :float?), do: to(str, :float)
-  def to("", :float!), do: raise(Error)
-  def to(str, :float!), do: to(str, :float)
+  def to!("", :float), do: 0
+  def to!(str, :float) when is_binary(str), do: String.to_float(str)
+  def to!("", :float?), do: nil
+  def to!(str, :float?), do: to!(str, :float)
+  def to!("", :float!), do: raise(Error)
+  def to!(str, :float!), do: to!(str, :float)
 
-  def to("", :integer), do: 0
-  def to(str, :integer) when is_binary(str), do: String.to_integer(str)
-  def to("", :integer?), do: nil
-  def to(str, :integer?), do: to(str, :integer)
-  def to("", :integer!), do: raise(Error)
-  def to(str, :integer!), do: to(str, :integer)
+  def to!("", :integer), do: 0
+  def to!(str, :integer) when is_binary(str), do: String.to_integer(str)
+  def to!("", :integer?), do: nil
+  def to!(str, :integer?), do: to!(str, :integer)
+  def to!("", :integer!), do: raise(Error)
+  def to!(str, :integer!), do: to!(str, :integer)
 
-  def to(str, :module) when is_binary(str) do
+  def to!(str, :module) when is_binary(str) do
     "Elixir.#{str}"
     |> String.to_existing_atom()
   end
 
-  def to("", :module?), do: nil
-  def to(str, :module?), do: to(str, :module)
-  def to("", :module!), do: raise(Error)
-  def to(str, :module!), do: to(str, :module)
+  def to!("", :module?), do: nil
+  def to!(str, :module?), do: to!(str, :module)
+  def to!("", :module!), do: raise(Error)
+  def to!(str, :module!), do: to!(str, :module)
 
-  def to(str, :string) when is_binary(str), do: str
-  def to("", :string?), do: nil
-  def to(str, :string?) when is_binary(str), do: str
-  def to("", :string!), do: raise(Error)
-  def to(str, :string!) when is_binary(str), do: str
+  def to!(str, :string) when is_binary(str), do: str
+  def to!("", :string?), do: nil
+  def to!(str, :string?) when is_binary(str), do: str
+  def to!("", :string!), do: raise(Error)
+  def to!(str, :string!) when is_binary(str), do: str
 
-  def to(str, _) when not is_binary(str), do: raise(Error, "Input must be a string.")
-  def to(_, type), do: raise(Error, "Unknown type #{inspect(type)}")
+  def to!(str, _) when not is_binary(str), do: raise(Error, "Input must be a string.")
+  def to!(_, type), do: raise(Error, "Unknown type #{inspect(type)}")
 end

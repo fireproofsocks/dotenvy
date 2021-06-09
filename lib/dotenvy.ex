@@ -7,12 +7,15 @@ defmodule Dotenvy do
   configuration in the environment.
 
   Unlike other configuration helpers, `Dotenvy` enforces no convention for the naming
-  of your files: you may name your configuration files whatever you wish.  `.env` is
-  a common choice, but `Dotenvy` does not have opinions.
+  of your files: `.env` is a common choice, you may name your configuration files whatever
+  you wish.
 
   See the [strategies](docs/strategies.md) for examples of various use cases.
   """
+
   import Dotenvy.Transformer
+
+  alias Dotenvy.Transformer.Error
 
   require Logger
 
@@ -31,45 +34,56 @@ defmodule Dotenvy do
 
   @doc """
   Reads a system environment variable and converts its output or returns a default value.
+  Use of `env!/2` is usually recommended over `env!/3` because it creates a stronger contract with
+  the environment (i.e. your app literally will not start if required env variables are missing)
+  but there are times where supplying default values is desirable, and the `env!/3` function is
+  appropriate for those situations.
 
   If the given system environment `variable` is *set*, its value is converted to
-  the given `type`. The `default` value is _only_ used when the system environment
-  variable is _not_ set; the `default` value is retur as-is, without conversion.
+  the given `type`. The provided `default` value is _only_ used when the system environment
+  variable is _not_ set; **the `default` value is returned as-is, without conversion**.
   This allows greater control of the output.
 
   Although this relies on `System.fetch_env/1`, it may still raise an error
-  if an unsupported `type` is provided or if non-empty values are required.
-
-  The conversion is delegated to `Dotenvy.Transformer.to/2` -- see its documentation
+  if an unsupported `type` is provided or if non-empty values are required because
+  the conversion is delegated to `Dotenvy.Transformer.to!/2` -- see its documentation
   for a list of supported types.
 
   ## Examples
 
-      iex> env("PORT", :integer, 5432)
+      iex> env!("PORT", :integer, 5432)
       5433
-      iex> env("NOT_SET", :boolean, %{not: "converted"})
+      iex> env!("NOT_SET", :boolean, %{not: "converted"})
       %{not: "converted"}
       iex> System.put_env("HOST", "")
-      iex> env("HOST", :string!, "localhost")
+      iex> env!("HOST", :string!, "localhost")
       ** (Dotenvy.Transformer.Error) non-empty value required
   """
-  @spec env(variable :: binary(), type :: atom(), default :: any()) :: any() | no_return()
-  def env(variable, type \\ :string, default \\ nil)
-
-  def env(variable, type, default) do
+  @doc since: "0.3.0"
+  @spec env!(variable :: binary(), type :: atom(), default :: any()) :: any() | no_return()
+  def env!(variable, type, default) do
     variable
     |> System.fetch_env()
     |> case do
       :error -> default
-      {:ok, value} -> to(value, type)
+      {:ok, value} -> to!(value, type)
     end
+  rescue
+    error in Error ->
+      reraise "Error converting #{variable} to #{type}: #{error.message}", __STACKTRACE__
   end
+
+  @deprecated "Use `Dotenvy.env!/3` instead"
+  @spec env(variable :: binary(), type :: atom(), default :: any()) :: any() | no_return()
+  def env(variable, type \\ :string, default \\ nil)
+
+  def env(variable, type, default), do: env!(variable, type, default)
 
   @doc """
   Reads the given system environment `variable` and converts its value to the given
   `type`.
 
-  This relies on `System.fetch_env!/1` so it will raise if a variable is
+  Internally, this behaves like `System.fetch_env!/1`: it will raise if a variable is
   not set or if empty values are encounted when non-empty values are required.
 
   The conversion is delegated to `Dotenvy.Transformer.to/2` -- see its documentation
@@ -87,8 +101,17 @@ defmodule Dotenvy do
 
   def env!(variable, type) do
     variable
-    |> System.fetch_env!()
-    |> to(type)
+    |> System.fetch_env()
+    |> case do
+      :error -> raise "System environment variable #{variable} not set"
+      {:ok, value} -> to!(value, type)
+    end
+  rescue
+    error in Error ->
+      reraise "Error converting #{variable} to #{type}: #{error.message}", __STACKTRACE__
+
+    error ->
+      reraise error, __STACKTRACE__
   end
 
   @doc """
@@ -103,7 +126,7 @@ defmodule Dotenvy do
 
   - `:overwrite?` boolean indicating whether or not values parsed from provided `.env` files should
     overwrite existing system environment variables. It is recommended to keep this `false`:
-    setting it to `true` means that you cannot set variables on the command line, e.g.
+    setting it to `true` would prevent you from setting variables on the command line, e.g.
     `LOG_LEVEL=debug iex -S mix` Default: `false`
 
   - `:parser` module that implements `c:Dotenvy.parse/3` callback. Default: `Dotenvy.Parser`
@@ -112,11 +135,12 @@ defmodule Dotenvy do
     When `true`, all the listed files must exist.
     When `false`, none of the listed files must exist.
     When some of the files are required and some are optional, provide a list
-    specifying which files are required. Default: `false`
+    specifying which files are required. If a file listed here is not included
+    in the function's `files` argument, it is ignored. Default: `false`
 
   - `:side_effect` an arity 1 function called after the successful parsing of each of the given files.
-    The default is `&System.put_env/1`, which will have the effect of setting system environment variables based on
-    the results of the file parsing.
+    The default is `&System.put_env/1`, which will have the effect of setting system environment
+    variables based on the results of the file parsing.
 
   - `:vars` a map with string keys representing the starting pool of variables.
     Default: output of `System.get_env/0`.
@@ -136,7 +160,6 @@ defmodule Dotenvy do
       iex> Dotenvy.source(["file1", "file2"], side_effect: false, vars: %{})
 
   """
-
   @spec source(files :: binary() | [binary()], opts :: keyword()) ::
           {:ok, %{optional(String.t()) => String.t()}} | {:error, any()}
   def source(files, opts \\ [])
@@ -147,8 +170,10 @@ defmodule Dotenvy do
     side_effect = Keyword.get(opts, :side_effect, &System.put_env/1)
     vars = Keyword.get(opts, :vars, System.get_env())
     overwrite? = Keyword.get(opts, :overwrite?, false)
+    require_files = Keyword.get(opts, :require_files, false)
 
-    with {:ok, parsed_vars} <- handle_files(files, vars, opts),
+    with :ok <- verify_files(files, require_files),
+         {:ok, parsed_vars} <- handle_files(files, vars, opts),
          {:ok, merged_vars} <- merge_values(parsed_vars, vars, overwrite?) do
       if is_function(side_effect), do: side_effect.(merged_vars)
       {:ok, merged_vars}
@@ -196,6 +221,20 @@ defmodule Dotenvy do
 
       {:error, error} ->
         {:error, "There was error with file #{inspect(file)}: #{inspect(error)}"}
+    end
+  end
+
+  @spec verify_files(list(), list() | boolean()) :: :ok | {:error, any()}
+  defp verify_files(_, true), do: :ok
+  defp verify_files(_, false), do: :ok
+
+  defp verify_files(input, require_files) do
+    input_set = MapSet.new(input)
+    required_set = MapSet.new(require_files)
+
+    case MapSet.equal?(required_set, input_set) || MapSet.subset?(required_set, input_set) do
+      true -> :ok
+      false -> {:error, ":require_files includes"}
     end
   end
 

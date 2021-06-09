@@ -15,7 +15,7 @@ Add `dotenvy` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:dotenvy, "~> 0.1.0"}
+    {:dotenvy, "~> 0.3.0"}
   ]
 end
 ```
@@ -28,15 +28,17 @@ It has no dependencies.
 of the most effective places to do that is inside `config/runtime.exs` (available
 since Elixir v1.11).
 
-The `Dotenvy.source/2` function can accept a list of paths of where to look for dotenv files -- when combined with `Config.config_env/0` it is easy to load up environment-specifc config, e.g.
+The `Dotenvy.source/2` function can accept a single file or a list of files.  When combined with `Config.config_env/0` it is easy to load up environment-specifc config, e.g.
 
 ```elixir
-source([".env", ".env.\#{config_env()}", ".env.\#{config_env()}.local"])
+source([".env", ".env.#{config_env()}", ".env.#{config_env()}.local"])
 ```
 
-By default, the listed files do not _need_ to exist -- if no file exists at the specified path, the next path is tried. This makes it easy to commit basic files for default values and basic funcitonality, and still leave the door open to developers so they can override them with their own configurations.
+By default, the listed files do not _need_ to exist -- the function only needs to know where to look. This makes it easy to commit default values while still leaving the door open to developers to override values via their own configuration files.
 
-For a simple exmample, we can load a single file:
+Unlike other packages, `Dotenvy` has no opinions about the names or locations of your dotenv config files, you just need to pass their paths to `Dotenvy.source/2` or `Dotenvy.source!/2`.
+
+For a simple example, we can load a single file:
 
 ```elixir
 # config/runtime.exs
@@ -51,7 +53,7 @@ config :myapp, MyApp.Repo,
     password: env!("PASSWORD", :string),
     hostname: env!("HOSTNAME", :string!),
     pool_size: env!("POOL_SIZE", :integer),
-    adapter: env("ADAPTER", :module, Ecto.Adapters.Postgres),
+    adapter: env!("ADAPTER", :module, Ecto.Adapters.Postgres),
     pool: env!("POOL", :module?)
 ```
 
@@ -67,11 +69,9 @@ POOL_SIZE=10
 POOL=
 ```
 
-When you set up your application configuration in this way, you are creating a contract
-with the environment (errors will be raised if certain system variables are not set),
-and this is an approach that works equally well for your day-to-day development and testing, as well as for mix releases.
+When you set up your application configuration in this way, you are creating a contract with the environment (errors will be raised if certain system variables are not set because `Dotenvy.env!/2` relies on `System.fetch_env!/1`), and this is an approach that works equally well for your day-to-day development and testing, as well as for mix releases.
 
-Read the [configuration strategies](docs/strategies.md) for other more detailed examples of how to configure your app.
+Read the [configuration strategies](docs/strategies.md) for more detailed examples of how to configure your app.
 
 Refer to the ["dotenv" (`.env`) file format](docs/dotenv-file-format.md) for more examples and features of the supported syntax.
 
@@ -89,6 +89,14 @@ def run(_args) do
   Mix.Task.run("app.config")
   # ...
 end
-```  
+```
+
+If you are dealing with third-party mix tasks that fail to properly load configuration, you may need to manually call `mix app.config` before running them, e.g.
+
+```sh
+mix do app.config other.task
+```
+
+---------------------------------------------------
 
 Image Attribution: "dot" by Stepan Voevodin from the [Noun Project](https://thenounproject.com/)

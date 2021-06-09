@@ -4,8 +4,6 @@ defmodule Dotenvy.Parser do
   string keys. See [Dotenv File Format](docs/dotenv-file-format.md) for details
   on the supported file format.
 
-  See the docs for details on the supported file format.
-
   This implementation uses parsing over regular expressions for most of its work.
   """
   @behaviour Dotenvy

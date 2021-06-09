@@ -3,7 +3,7 @@
 `.env` files (a.k.a. "dotenv") store key-value pairs in a format descended from
 simple bash files that exported environment variables.
 
-This implementation cleaves closely to format described by the original [dotenv](https://github.com/bkeepers/dotenv) package, but it is not a direct match (by design).
+This implementation cleaves closely to the format described by the original [dotenv](https://github.com/bkeepers/dotenv) package, but it is not a direct match (by design).
 
 Typically, a dotenv (`.env`) file is formatted into simple key-value pairs:
 
@@ -31,11 +31,11 @@ For the sake of portability (and sanity), environment variable names must consis
 
 ## Values
 
-Values are what lie to the right of the equals sign. They may be quoted.
+Values are to the right of the equals sign. They may be quoted.
 Using single quotes will prevent variables from being interpolated.
 
     SIMPLE=xyz123
-    INTERPOLATED="Multiple\\nLines and variable substitution: ${SIMPLE}"
+    INTERPOLATED="Multiple\nLines and variable substitution: ${SIMPLE}"
     NON_INTERPOLATED='raw text without variable interpolation'
     MULTILINE = """
     long text here,
@@ -44,7 +44,7 @@ Using single quotes will prevent variables from being interpolated.
 
 ## Escape Sequences
 
-The following character strings will be interpreted (i.e. escaped) as specific codepoints in the same way you would expect if the values were assigned inside a script. Remember: when a text file is read, it is read as a series of utf8 encoded code points.
+The following character strings will be interpreted (i.e. escaped) as specific codepoints in the same way you would expect if the values were assigned inside a script. Remember: when a text file is read, it is read as a series of utf8 encoded code points. Character sequences like `\n` have no special meaning until they are "escaped" and a combination of codepoints is replaced by a single codepoint.
 
 - `\n` Linefeed (aka newline); `<<92, 110>>` -> `<<10>>`
 - `\r` Carriage return; `<<92, 114>>` -> `<<13>>`
@@ -56,11 +56,11 @@ The following character strings will be interpreted (i.e. escaped) as specific c
 - `\\` Backslash; -> `<<92, 92>>` -> `<<92>>`
 - `\uFFFF` Unicode escape (4 hex characters to denote the codepoint)
 
-If a backslash precedes any other character, that character will be interpretted literally: the backslash will be ignored and removed from output.
+If a backslash precedes any other character, that character will be interpretted literally: i.e. the backslash will be ignored and removed from output.
 
 ### Interpolation (a.k.a. Variable Substitution)
 
-Values left unquoted or wrapped in double-quotes will interpolate variables in the the `${VAR}` syntax. This can be useful for referencing existing system environment variables or to reference varaibles previously parsed.
+Values left unquoted or wrapped in double-quotes will interpolate variables in the `${VAR}` syntax. This can be useful for referencing existing system environment variables or to reference varaibles previously parsed.
 
 For example:
 

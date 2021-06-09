@@ -8,7 +8,7 @@ Although there are other places where `Dotenvy` may prove useful, it was designe
 
 Secondly, configuration providers sometimes shift the task of "shaping" the configuration out of Elixir and into some static representation (e.g. JSON or TOML). The allure of a straight-forward static file is deceiving because there is no easy way to delineate Elixir-specific subtleties such as distinguishing between keyword lists and maps. When configuration providers "solve" one problem, they often create another: it can require some busywork to convert values back into Elixir variable types that your application requires.
 
-For these reasons, `Dotenvy` does not rely on [configuration providers](https://hexdocs.pm/elixir/Config.Provider.html).
+For these reasons, `Dotenvy` does not rely on [configuration providers](https://hexdocs.pm/elixir/Config.Provider.html); dotenv files are an easier "lingua franca".
 
 ## Dotenv for Dev and Prod
 
@@ -70,7 +70,7 @@ The `.env` shows some values suitable local development; if the app were deploye
 
 You may notice that in this example we have done away with `config/dev.exs`, `config/test.exs`, and `config/prod.exs`. These should be used _only_ when your app has a legitimate compile-time need.  If you _can_ configure something at runtime, you _should_ configure it at runtime.  These extra config files are omitted to help demonstrate how the decisions about how the app should run can often be pushed into `runtime.exs`. This should help avoid confusion that often arises between compile-time and runtime configuration.
 
-## A Dotenv for Every Environment
+## Dotenvs for All Environments
 
 It is possible to use _only_ a `config.exs` and a `runtime.exs` file to configure
 many Elixir applications: let the `.env` tell the app how to run!
@@ -127,7 +127,7 @@ Consider the following setup:
 The above setup would likely commit the `.env.test` file so it was sure to override, and add `.env` to `.gitignore`, but other strategies are possible.  The above example demonstrates developer settings appropriate for local development in the sample `.env` file, but a production deployment would only differ in its _values_: the shape of the file would be the same.
 
 The `.env.test` file is loaded when running tests, so its values override any of the
-values set in the `.env`.
+values set in the `.env`, but they would _not_ override any pre-existing system variables because the `:overwrite?` option is `false` by default.
 
 By using `Dotenvy.env!/2`, a strong contract is created with the environment: the
 system running this app _must_ have the designated environment variables set somehow,
