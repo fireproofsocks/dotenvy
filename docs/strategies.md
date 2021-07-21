@@ -137,3 +137,46 @@ Using the nil-able variants of the type-casting (those ending with `?`) is an ea
 way to fall back to `nil` when the variable contains an empty string: `env!("POOL", :module?)` requires that the `POOL` variable is set, but it will return a `nil` if the value is an empty string.
 
 See `Dotenvy.Transformer` for more details.
+
+## Releases
+
+One of the hurdles when dealing with Elixir releases is that only certain files are packaged into them.  One solution to this is to specify additional directories to include in the release via the `overlays` option in your `mix.exs`, e.g. an `envs/` directory which contains your dotenv files:
+
+```elixir
+# mix.exs
+defp releases do
+    [
+      myapp: [
+        overlays: ["envs/"]
+      ]
+    ]
+end
+```
+
+Since these files are copied to the root of your release, the relative paths used in your `runtime.exs` will not be able to find them when your app is running in the context of a release. One solution to this is to rely on the `RELEASE_ROOT` system environment variable which is set when a release is run. If this value exists, it will represent the fully qualified path to your release; this variable will not be set when running your app locally (e.g. during development).
+
+We can use the presence of the `RELEASE_ROOT` to determine a directory prefix for where to look for our dotenv files, e.g.:
+
+```elixir
+import Config
+import Dotenvy
+
+# For local development, read dotenv files inside the envs/ dir;
+# for releases, read them at the RELEASE_ROOT
+config_dir_prefix =
+  System.fetch_env("RELEASE_ROOT")
+  |> case do
+    :error ->
+      "envs/"
+
+    {:ok, value} ->
+      IO.puts("Loading dotenv files from #{value}")
+      "#{value}/"
+  end
+
+source!([
+  "#{config_dir_prefix}.env",
+  "#{config_dir_prefix}.#{config_env()}.env",
+  "#{config_dir_prefix}.#{config_env()}.local.env"
+])
+```
