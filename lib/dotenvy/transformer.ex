@@ -58,6 +58,12 @@ defmodule Dotenvy.Transformer do
   - `:string` - no conversion (default)
   - `:string?` - empty strings will be considered `nil`.
   - `:string!` - as above, but an empty string will raise.
+  - custom function - see below.
+
+  ## Custom Callback function
+
+  When you require more control over the transformation of your value than is possible
+  with the types provided, you can provide an arity 1 function in place of the type.
 
   ## Examples
 
@@ -69,6 +75,8 @@ defmodule Dotenvy.Transformer do
       nil
       iex> to!("5432", :integer)
       5432
+      iex> to!("foo", fn val -> val <> "bar" end)
+      "foobar"
   """
   @spec to!(str :: binary(), type :: atom) :: any()
   def to!(str, :atom) when is_binary(str) do
@@ -147,6 +155,10 @@ defmodule Dotenvy.Transformer do
   def to!(str, :string?) when is_binary(str), do: str
   def to!("", :string!), do: raise(Error)
   def to!(str, :string!) when is_binary(str), do: str
+
+  def to!(str, callback) when is_function(callback, 1) do
+    callback.(str)
+  end
 
   def to!(str, _) when not is_binary(str), do: raise(Error, "Input must be a string.")
   def to!(_, type), do: raise(Error, "Unknown type #{inspect(type)}")

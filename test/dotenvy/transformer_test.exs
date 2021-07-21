@@ -255,6 +255,12 @@ defmodule Dotenvy.TransformerTest do
     end
   end
 
+  describe "to!/2 custom callback function" do
+    test "do custom modification" do
+      assert "foobar" == T.to!("foo", fn val -> "#{val}bar" end)
+    end
+  end
+
   describe "to!/2 errors" do
     test "unsupported type" do
       assert_raise Dotenvy.Transformer.Error, fn ->
