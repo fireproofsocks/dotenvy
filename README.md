@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/hexpm/l/dotenvy.svg)](https://hex.pm/packages/dotenvy)
 [![Last Updated](https://img.shields.io/github/last-commit/fireproofsocks/dotenvy.svg)](https://github.com/fireproofsocks/dotenvy/commits/master)
 
-`Dotenvy` is an Elixir implementation of the original [dotenv](https://github.com/bkeepers/dotenv) Ruby gem, **compatible with mix and releases**. It is designed to help the development of applications following the principles of the [12-factor app](https://12factor.net/) and its recommendation to store configuration in the environment.
+`Dotenvy` is an Elixir port of the original [dotenv](https://github.com/bkeepers/dotenv) Ruby gem, **compatible with mix and releases**. It is designed to help the development of applications following the principles of the [12-factor app](https://12factor.net/) and its recommendation to store configuration in the environment.
 
 ## Installation
 

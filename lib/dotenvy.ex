@@ -1,6 +1,6 @@
 defmodule Dotenvy do
   @moduledoc """
-  `Dotenvy` is an Elixir implementation of the original [dotenv](https://github.com/bkeepers/dotenv) Ruby gem.
+  `Dotenvy` is an Elixir port of the original [dotenv](https://github.com/bkeepers/dotenv) Ruby gem.
 
   It is designed to help the development of applications following the principles of
   the [12-factor app](https://12factor.net/) and its recommendation to store

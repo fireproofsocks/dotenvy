@@ -39,9 +39,8 @@ defmodule Dotenvy.MixProject do
 
   defp description do
     """
-    Dotenvy is an Elixir implementation of the original dotenv Ruby gem, compatible
-    with mix and releases. It is designed to facilitate runtime configuration per the
-    guidelines of the 12-factor App.
+    A port of the original dotenv Ruby gem, for mix and releases.
+    Facilitates runtime config per the 12-factor App.
     """
   end
 
