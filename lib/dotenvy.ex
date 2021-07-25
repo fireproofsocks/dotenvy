@@ -108,7 +108,7 @@ defmodule Dotenvy do
     end
   rescue
     error in Error ->
-      reraise "Error converting #{variable} to #{type}: #{error.message}", __STACKTRACE__
+      reraise "Error converting variable #{variable} to #{type}: #{error.message}", __STACKTRACE__
 
     error ->
       reraise error, __STACKTRACE__

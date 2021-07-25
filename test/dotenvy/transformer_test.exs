@@ -139,6 +139,12 @@ defmodule Dotenvy.TransformerTest do
     test "empty string to zero" do
       assert 0 = T.to!("", :float)
     end
+
+    test "raises on unparsable" do
+      assert_raise Dotenvy.Transformer.Error, fn ->
+        T.to!("Abc", :float)
+      end
+    end
   end
 
   describe "to!/2 :float?" do
@@ -174,6 +180,12 @@ defmodule Dotenvy.TransformerTest do
 
     test "negative" do
       assert -123 = T.to!("-123", :integer)
+    end
+
+    test "raises on unparsable" do
+      assert_raise Dotenvy.Transformer.Error, fn ->
+        T.to!("Abc", :integer)
+      end
     end
   end
 

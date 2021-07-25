@@ -3,6 +3,10 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.1
+
+- Makes error messages more informative when unable to convert strings to integers or floats
+
 ## v0.4.0
 
 - Adds support for custom transformer types by allowing an arity 1 function as the second argument to `Dotenvy.Transformer.to/2`. See [Issue 2](https://github.com/fireproofsocks/dotenvy/issues/2)
