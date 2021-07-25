@@ -2,7 +2,7 @@ defmodule Dotenvy.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/fireproofsocks/dotenvy"
-  @version "0.4.0"
+  @version "0.4.1"
 
   def project do
     [

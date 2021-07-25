@@ -12,7 +12,7 @@ defmodule Dotenvy.Transformer do
   end
 
   @doc """
-  Converts strings into Elixir data types with support for nil-able values.
+  Converts strings into Elixir data types with support for nil-able values. Raises on error.
 
   Each type determines how to interpret the incoming string, e.g. when the `type`
   is `:integer`, an empty string is considered a `0`; when `:integer?` is the `type`,
@@ -127,14 +127,34 @@ defmodule Dotenvy.Transformer do
   def to!(str, :existing_atom!), do: to!(str, :existing_atom)
 
   def to!("", :float), do: 0
-  def to!(str, :float) when is_binary(str), do: String.to_float(str)
+
+  def to!(str, :float) when is_binary(str) do
+    case Float.parse(str) do
+      :error ->
+        raise(Error, "Unparsable")
+
+      {value, _} ->
+        value
+    end
+  end
+
   def to!("", :float?), do: nil
   def to!(str, :float?), do: to!(str, :float)
   def to!("", :float!), do: raise(Error)
   def to!(str, :float!), do: to!(str, :float)
 
   def to!("", :integer), do: 0
-  def to!(str, :integer) when is_binary(str), do: String.to_integer(str)
+
+  def to!(str, :integer) when is_binary(str) do
+    case Integer.parse(str) do
+      :error ->
+        raise(Error, "Unparsable")
+
+      {value, _} ->
+        value
+    end
+  end
+
   def to!("", :integer?), do: nil
   def to!(str, :integer?), do: to!(str, :integer)
   def to!("", :integer!), do: raise(Error)
