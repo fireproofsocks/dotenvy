@@ -12,14 +12,14 @@ defmodule DotenvyTest do
     end
 
     test "returns value when env set", %{test: test} do
-      System.put_env("TEST_VALUE", "#{test}")
+      source([], vars: %{"TEST_VALUE" => "#{test}"})
       assert "#{test}" == env!("TEST_VALUE", :string, nil)
     end
   end
 
   describe "env!/2" do
     test "default type is string", %{test: test} do
-      System.put_env("TEST_VALUE", "#{test}")
+      source([], vars: %{"TEST_VALUE" => "#{test}"})
       assert "#{test}" == env!("TEST_VALUE")
     end
 
@@ -40,9 +40,9 @@ defmodule DotenvyTest do
                source(["test/support/files/a.env", "test/support/files/b.env"], vars: %{})
     end
 
-    test "sets system env vars" do
+    test "system env vars not set" do
       assert {:ok, _} = source(["test/support/files/a.env"])
-      assert "ball" == System.get_env("B")
+      assert :error == System.fetch_env("B")
     end
 
     test "enforces list of :require_files" do

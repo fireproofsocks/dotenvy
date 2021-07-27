@@ -2,7 +2,7 @@ defmodule Dotenvy do
   @moduledoc """
   `Dotenvy` is an Elixir port of the original [dotenv](https://github.com/bkeepers/dotenv) Ruby gem.
 
-  It is designed to help the development of applications following the principles of
+  It is designed to help applications follow the principles of
   the [12-factor app](https://12factor.net/) and its recommendation to store
   configuration in the environment.
 
@@ -33,21 +33,24 @@ defmodule Dotenvy do
               {:ok, map()} | {:error, any()}
 
   @doc """
-  Reads a system environment variable and converts its output or returns a default value.
+  Reads a sourced variable and converts its output or returns a default value.
   Use of `env!/2` is usually recommended over `env!/3` because it creates a stronger contract with
   the environment (i.e. your app literally will not start if required env variables are missing)
   but there are times where supplying default values is desirable, and the `env!/3` function is
   appropriate for those situations.
 
-  If the given system environment `variable` is *set*, its value is converted to
-  the given `type`. The provided `default` value is _only_ used when the system environment
+  If the given `variable` is *set*, its value is converted to
+  the given `type`. The provided `default` value is _only_ used when the
   variable is _not_ set; **the `default` value is returned as-is, without conversion**.
   This allows greater control of the output.
 
-  Although this relies on `System.fetch_env/1`, it may still raise an error
+  Although this relies on `Application.fetch_env/1`, it may still raise an error
   if an unsupported `type` is provided or if non-empty values are required because
   the conversion is delegated to `Dotenvy.Transformer.to!/2` -- see its documentation
   for a list of supported types.
+
+  This function does *not* read from `System` directly: it reads values that have been
+  sourced by the `source/2` or `source!/2` functions.
 
   ## Examples
 
@@ -56,15 +59,14 @@ defmodule Dotenvy do
       iex> env!("NOT_SET", :boolean, %{not: "converted"})
       %{not: "converted"}
       iex> System.put_env("HOST", "")
+      iex> source([".env", ...])
       iex> env!("HOST", :string!, "localhost")
-      ** (Dotenvy.Transformer.Error) non-empty value required
+      ** (RuntimeError) Error converting HOST to string!: non-empty value required
   """
   @doc since: "0.3.0"
   @spec env!(variable :: binary(), type :: atom(), default :: any()) :: any() | no_return()
   def env!(variable, type, default) do
-    variable
-    |> System.fetch_env()
-    |> case do
+    case fetch_var(variable) do
       :error -> default
       {:ok, value} -> to!(value, type)
     end
@@ -80,13 +82,14 @@ defmodule Dotenvy do
   def env(variable, type, default), do: env!(variable, type, default)
 
   @doc """
-  Reads the given system environment `variable` and converts its value to the given
-  `type`.
+  Reads the given sourced `variable` and converts its value to the given `type`.
+  This function does not read directly from `System`; values must first be sourced via
+  `source/2` or `source!/2`.
 
   Internally, this behaves like `System.fetch_env!/1`: it will raise if a variable is
   not set or if empty values are encounted when non-empty values are required.
 
-  The conversion is delegated to `Dotenvy.Transformer.to!/2` -- see its documentation
+  Type conversion is delegated to `Dotenvy.Transformer.to!/2` -- see its documentation
   for a list of supported types.
 
   ## Examples
@@ -100,10 +103,8 @@ defmodule Dotenvy do
   def env!(variable, type \\ :string)
 
   def env!(variable, type) do
-    variable
-    |> System.fetch_env()
-    |> case do
-      :error -> raise "System environment variable #{variable} not set"
+    case fetch_var(variable) do
+      :error -> raise "Application environment variable #{variable} not set"
       {:ok, value} -> to!(value, type)
     end
   rescue
@@ -115,8 +116,8 @@ defmodule Dotenvy do
   end
 
   @doc """
-  Like Bash's `source` command, this loads the given file(s) and sets the corresponding
-  system environment variables using a side effect function (`&System.put_env/1` by default).
+  Like Bash's `source` command, this loads the given file(s) and stores the values via
+  a side effect function (which relies on `Application.put_env/4`).
 
   Files are processed in the order they are given. Values parsed from one file may override
   values parsed from previous files: the last file parsed has final say. The `:overwrite?`
@@ -139,8 +140,7 @@ defmodule Dotenvy do
     in the function's `files` argument, it is ignored. Default: `false`
 
   - `:side_effect` an arity 1 function called after the successful parsing of each of the given files.
-    The default is `&System.put_env/1`, which will have the effect of setting system environment
-    variables based on the results of the file parsing.
+    The default is an internal function that stores the values inside the application process dictionary.
 
   - `:vars` a map with string keys representing the starting pool of variables.
     Default: output of `System.get_env/0`.
@@ -156,7 +156,7 @@ defmodule Dotenvy do
       }
 
       # If you only want to return the parsed contents of the listed files
-      # ignoring system environment variables altogether
+      # ignoring side-effects altogether
       iex> Dotenvy.source(["file1", "file2"], side_effect: false, vars: %{})
 
   """
@@ -167,7 +167,8 @@ defmodule Dotenvy do
   def source(file, opts) when is_binary(file), do: source([file], opts)
 
   def source(files, opts) when is_list(files) do
-    side_effect = Keyword.get(opts, :side_effect, &System.put_env/1)
+    side_effect = Keyword.get(opts, :side_effect, &put_all_vars/1)
+
     vars = Keyword.get(opts, :vars, System.get_env())
     overwrite? = Keyword.get(opts, :overwrite?, false)
     require_files = Keyword.get(opts, :require_files, false)
@@ -202,6 +203,16 @@ defmodule Dotenvy do
 
   defp merge_values(parsed, system_env, false) do
     {:ok, Map.merge(parsed, system_env)}
+  end
+
+  defp fetch_var(variable) do
+    :dotenvy
+    |> Application.get_env(:vars, %{})
+    |> Map.fetch(variable)
+  end
+
+  defp put_all_vars(vars) do
+    Application.put_env(:dotenvy, :vars, vars)
   end
 
   # handles the parsing of a single file
