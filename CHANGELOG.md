@@ -3,6 +3,10 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.5.0
+
+- Shifts storage of system environment variables to the application process dictionary and alters the reading of this data to help improve the security posture and avoid leaking env values. `:side_effect` option for `source/2` and `source!/2` function changed.
+
 ## v0.4.1
 
 - Makes error messages more informative when unable to convert strings to integers or floats
