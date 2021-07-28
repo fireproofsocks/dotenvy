@@ -57,7 +57,6 @@ defmodule Dotenvy do
       iex> env!("NOT_SET", :boolean, %{not: "converted"})
       %{not: "converted"}
       iex> System.put_env("HOST", "")
-      iex> source([".env", ...])
       iex> env!("HOST", :string!, "localhost")
       ** (RuntimeError) Error converting HOST to string!: non-empty value required
   """
