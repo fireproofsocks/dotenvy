@@ -33,7 +33,7 @@ defmodule Dotenvy do
               {:ok, map()} | {:error, any()}
 
   @doc """
-  Reads a sourced variable and converts its output or returns a default value.
+  Reads an env variable and converts its output or returns a default value.
   Use of `env!/2` is usually recommended over `env!/3` because it creates a stronger contract with
   the environment (i.e. your app literally will not start if required env variables are missing)
   but there are times where supplying default values is desirable, and the `env!/3` function is
@@ -44,13 +44,11 @@ defmodule Dotenvy do
   variable is _not_ set; **the `default` value is returned as-is, without conversion**.
   This allows greater control of the output.
 
-  Although this relies on `Application.fetch_env/1`, it may still raise an error
-  if an unsupported `type` is provided or if non-empty values are required because
-  the conversion is delegated to `Dotenvy.Transformer.to!/2` -- see its documentation
-  for a list of supported types.
+  This function may raise an error the conversion is delegated to `Dotenvy.Transformer.to!/2`
+  -- see its documentation for a list of supported types.
 
-  This function does *not* read from `System` directly: it reads values that have been
-  sourced by the `source/2` or `source!/2` functions.
+  This function attempts to read value from a local data store of sourced values;
+  it will fall back to `System.fetch_env/1` only if there is no locally stored variable.
 
   ## Examples
 
@@ -82,15 +80,13 @@ defmodule Dotenvy do
   def env(variable, type, default), do: env!(variable, type, default)
 
   @doc """
-  Reads the given sourced `variable` and converts its value to the given `type`.
-  This function does not read directly from `System`; values must first be sourced via
-  `source/2` or `source!/2`.
+  Reads the given env `variable` and converts its value to the given `type`.
 
-  Internally, this behaves like `System.fetch_env!/1`: it will raise if a variable is
-  not set or if empty values are encounted when non-empty values are required.
+  This function attempts to read value from a local data store of sourced values;
+  it will fall back to `System.fetch_env/1` only if there is no locally stored variable.
 
-  Type conversion is delegated to `Dotenvy.Transformer.to!/2` -- see its documentation
-  for a list of supported types.
+  This function may raise an error because type conversion is delegated to
+  `Dotenvy.Transformer.to!/2` -- see its documentation for a list of supported types.
 
   ## Examples
 
@@ -206,14 +202,16 @@ defmodule Dotenvy do
   end
 
   defp fetch_var(variable) do
-    :dotenvy
-    |> Application.get_env(:vars, %{})
+    :dotenvy_vars
+    |> Process.get(%{})
     |> Map.fetch(variable)
+    |> case do
+      {:ok, value} -> {:ok, value}
+      :error -> System.fetch_env(variable)
+    end
   end
 
-  defp put_all_vars(vars) do
-    Application.put_env(:dotenvy, :vars, vars)
-  end
+  defp put_all_vars(vars), do: Process.put(:dotenvy_vars, vars)
 
   # handles the parsing of a single file
   defp handle_files([], %{} = vars, _opts), do: {:ok, vars}

@@ -12,14 +12,14 @@ defmodule DotenvyTest do
     end
 
     test "returns value when env set", %{test: test} do
-      source([], vars: %{"TEST_VALUE" => "#{test}"})
+      System.put_env("TEST_VALUE", "#{test}")
       assert "#{test}" == env!("TEST_VALUE", :string, nil)
     end
   end
 
   describe "env!/2" do
     test "default type is string", %{test: test} do
-      source([], vars: %{"TEST_VALUE" => "#{test}"})
+      System.put_env("TEST_VALUE", "#{test}")
       assert "#{test}" == env!("TEST_VALUE")
     end
 
