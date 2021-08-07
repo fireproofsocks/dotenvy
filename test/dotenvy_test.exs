@@ -40,9 +40,9 @@ defmodule DotenvyTest do
                source(["test/support/files/a.env", "test/support/files/b.env"], vars: %{})
     end
 
-    test "sets system env vars" do
+    test "system env vars not set" do
       assert {:ok, _} = source(["test/support/files/a.env"])
-      assert "ball" == System.get_env("B")
+      assert :error == System.fetch_env("B")
     end
 
     test "enforces list of :require_files" do
