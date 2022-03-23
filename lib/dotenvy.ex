@@ -120,10 +120,12 @@ defmodule Dotenvy do
 
   ## Options
 
-  - `:overwrite?` boolean indicating whether or not values parsed from provided `.env` files should
-    overwrite existing system environment variables. It is recommended to keep this `false`:
-    setting it to `true` would prevent you from setting variables on the command line, e.g.
-    `LOG_LEVEL=debug iex -S mix` Default: `false`
+  - `:overwrite?` boolean indicating whether values parsed from provided `.env` files should
+    take precedence over pre-existing system environment variables. It is recommended to
+    keep this `false`: setting it to `true` would prevent you from setting variables on the
+    command line, e.g. the expectation of running `LOG_LEVEL=debug iex -S mix` would be that
+    `env("LOG_LEVEL")` would yield `debug` instead of whatever was defiend in the `.env` files.
+    Default: `false`
 
   - `:parser` module that implements `c:Dotenvy.parse/3` callback. Default: `Dotenvy.Parser`
 
@@ -137,7 +139,7 @@ defmodule Dotenvy do
   - `:side_effect` an arity 1 function called after the successful parsing of each of the given files.
     The default is an internal function that stores the values inside the application process dictionary.
 
-  - `:vars` a map with string keys representing the starting pool of variables.
+  - `:vars` a map with string keys representing the starting pool of "pre-existing" variables.
     Default: output of `System.get_env/0`.
 
   ## Examples
