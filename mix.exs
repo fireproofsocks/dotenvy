@@ -2,7 +2,7 @@ defmodule Dotenvy.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/fireproofsocks/dotenvy"
-  @version "0.5.0"
+  @version "0.6.0"
 
   def project do
     [
@@ -86,11 +86,11 @@ defmodule Dotenvy.MixProject do
 
   defp deps do
     [
-      {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
-      {:ex_doc, "~> 0.24.0", only: :dev, runtime: false},
-      {:excoveralls, "~> 0.13", only: [:dev, :test], runtime: false},
-      {:mox, "~> 1.0.0", only: [:test], runtime: false}
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
+      {:ex_doc, "~> 0.28.3", only: :dev, runtime: false},
+      {:excoveralls, "~> 0.14.4", only: [:dev, :test], runtime: false},
+      {:mox, "~> 1.0.1", only: [:test], runtime: false}
     ]
   end
 end

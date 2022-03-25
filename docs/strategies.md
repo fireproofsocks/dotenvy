@@ -12,7 +12,7 @@ For these reasons, `Dotenvy` does not rely on [configuration providers](https://
 
 ## Dotenv for Dev and Prod
 
-The distinctions between "dev" and "prod" become less clear when we focus on configuration: ideally, the app is the same in all environments, it is only the configuration _values_ themselves that can be described as "dev" or "prod" -- in this example they will live inside a `.env` file.
+The distinctions between "dev" and "prod" become less clear when we focus on configuration: ideally, the app is the same in all environments, it is only the configuration _values_ themselves that can be described as "dev" or "prod" -- in this example they will live inside a single `.env` file.
 
 Let's look at the three files that will make this work:
 
@@ -35,7 +35,7 @@ Let's look at the three files that will make this work:
     import Config
     import Dotenvy
 
-    source(".env")
+    source([".env", System.get_env()])
 
     if config_env() == "test" do
         config :myapp, MyApp.Repo,
@@ -95,7 +95,7 @@ Consider the following setup:
     import Config
     import Dotenvy
 
-    source([".env", ".env.\#{config_env()}"])
+    source([".env", ".env.\#{config_env()}", System.get_env()])
 
     config :myapp, MyApp.Repo,
         database: env!("DATABASE", :string!),
@@ -127,7 +127,7 @@ Consider the following setup:
 The above setup would likely commit the `.env.test` file so it was sure to override, and add `.env` to `.gitignore`, but other strategies are possible.  The above example demonstrates developer settings appropriate for local development in the sample `.env` file, but a production deployment would only differ in its _values_: the shape of the file would be the same.
 
 The `.env.test` file is loaded when running tests, so its values override any of the
-values set in the `.env`, but they would _not_ override any pre-existing system variables because the `:overwrite?` option is `false` by default.
+values set in the `.env`.
 
 By using `Dotenvy.env!/2`, a strong contract is created with the environment: the
 system running this app _must_ have the designated environment variables set somehow,
@@ -178,5 +178,6 @@ source!([
   "#{config_dir_prefix}.env",
   "#{config_dir_prefix}.#{config_env()}.env",
   "#{config_dir_prefix}.#{config_env()}.local.env"
+  System.get_env()
 ])
 ```

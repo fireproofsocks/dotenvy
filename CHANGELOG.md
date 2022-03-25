@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.6.0
+
+- Does away with the confusing `:overwrite?` and `vars` options in favor of a simple declarative/explicit inputs. `source/2` now accepts ad-hoc maps as inputs.
+- Updates dependencies including `:ex_doc` to take advantage of admonishment blocks.
+- Various documentationa cleanups/clarifications.
+
 ## v0.5.0
 
 - Shifts storage of system environment variables to the application process dictionary and alters the reading of this data to help improve the security posture and avoid leaking env values. `:side_effect` option for `source/2` and `source!/2` function changed.
@@ -13,11 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v0.4.0
 
-- Adds support for custom transformer types by allowing an arity 1 function as the second argument to `Dotenvy.Transformer.to/2`. See [Issue 2](https://github.com/fireproofsocks/dotenvy/issues/2)
+- Adds support for custom transformer types by allowing an arity 1 function as the second argument to Dotenvy.Transformer.to/2. See [Issue 2](https://github.com/fireproofsocks/dotenvy/issues/2)
 
 ## v0.3.0
 
-- Renames `Dotenvy.Transformer.to/2` to `Dotenvy.Transformer.to!/2` to better communicate that it may raise an error.
+- Renames Dotenvy.Transformer.to/2 to `Dotenvy.Transformer.to!/2` to better communicate that it may raise an error.
 - Returns key name in errors for easier troubleshooting.
 - Tracks an error if the `:require_files` option lists a file not included in the `files` input (for sanity).
 - Introduces `Dotenvy.env!/3` (which is the same as `Dotenvy.env/3` but with no defaults provided). This better communicates that it may raise an error (because internally it relies on `Dotenvy.Transformer.to!/2`)
