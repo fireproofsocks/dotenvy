@@ -10,14 +10,14 @@ Typically, a dotenv (`.env`) file is formatted into simple key-value pairs:
     S3_BUCKET=YOURS3BUCKET
     SECRET_KEY=YOURSECRETKEYGOESHERE
 
-You may add `export` in front of each line so you can `source` the file in bash (see `Dotenvy.source/2`):
+Optionally, you may add `export` in front of each line so you can `source` the file in Bash:
 
     export S3_BUCKET=YOURS3BUCKET
     export SECRET_KEY=YOURSECRETKEYGOESHERE
 
 ## Variable Names
 
-For the sake of portability (and sanity), environment variable names must consist solely of letters, digits, and the underscore ( `_` ) and must not begin with a digit. In regex-speak:
+For the sake of portability (and sanity), environment variable names must consist solely of letters, digits, and the underscore ( `_` ) and must not begin with a digit. In regex-speak, the names must match the following pattern:
 
     [a-zA-Z_]+[a-zA-Z0-9_]*
 
