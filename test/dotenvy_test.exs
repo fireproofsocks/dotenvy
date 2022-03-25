@@ -32,7 +32,12 @@ defmodule DotenvyTest do
 
   describe "source/2" do
     test ":ok when no files parsed" do
-      assert {:ok, _} = source("does_not_exist")
+      assert {:ok, %{}} == source("does_not_exist")
+    end
+
+    test "merges maps" do
+      assert {:ok, %{"A" => "2", "B" => "3"}} ==
+               source([%{"A" => "1"}, %{"A" => "2", "B" => "3"}])
     end
 
     test "last file overwrites previous values" do
@@ -77,7 +82,7 @@ defmodule DotenvyTest do
 
     test "ok" do
       vars = %{"foo" => "bar"}
-      assert ^vars = source!("does_not_exist", vars: vars, side_effect: false)
+      assert ^vars = source!([%{"foo" => "bar"}, "does_not_exist"], side_effect: false)
     end
 
     test "raises on missing file when file is required" do
