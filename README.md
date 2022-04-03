@@ -97,7 +97,7 @@ POOL_SIZE=10
 POOL=
 ```
 
-When you set up your application configuration in this way, you are creating a contract with the environment: `Dotenvy.env!/2` will raise if the required variables have not been set or if the values cannot be properly tranformed. This is an approach that works equally well for your day-to-day development and testing, as well as for mix releases.
+When you set up your application configuration in this way, you are creating a contract with the environment: `Dotenvy.env!/2` will raise if the required variables have not been set or if the values cannot be properly transformed. This is an approach that works equally well for your day-to-day development and testing, as well as for mix releases.
 
 Read the [configuration strategies](docs/strategies.md) for more detailed examples of how to configure your app.
 
