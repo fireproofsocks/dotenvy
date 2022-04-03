@@ -56,11 +56,11 @@ The following character strings will be interpreted (i.e. escaped) as specific c
 - `\\` Backslash; -> `<<92, 92>>` -> `<<92>>`
 - `\uFFFF` Unicode escape (4 hex characters to denote the codepoint)
 
-If a backslash precedes any other character, that character will be interpretted literally: i.e. the backslash will be ignored and removed from output.
+If a backslash precedes any other character, that character will be interpreted literally: i.e. the backslash will be ignored and removed from output.
 
 ### Interpolation (a.k.a. Variable Substitution)
 
-Values left unquoted or wrapped in double-quotes will interpolate variables in the `${VAR}` syntax. This can be useful for referencing existing system environment variables or to reference varaibles previously parsed.
+Values left unquoted or wrapped in double-quotes will interpolate variables in the `${VAR}` syntax. This can be useful for referencing existing system environment variables or to reference variables previously parsed.
 
 For example:
 
