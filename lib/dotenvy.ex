@@ -70,7 +70,11 @@ defmodule Dotenvy do
       ** (RuntimeError) Error converting HOST to string!: non-empty value required
   """
   @doc since: "0.3.0"
-  @spec env!(variable :: binary(), type :: atom(), default :: any()) :: any() | no_return()
+  @spec env!(
+          variable :: binary(),
+          type :: Dotenvy.Transformer.conversion_type(),
+          default :: any()
+        ) :: any() | no_return()
   def env!(variable, type, default) do
     case fetch_var(variable) do
       :error -> default
@@ -103,7 +107,8 @@ defmodule Dotenvy do
       iex> env!("ENABLED", :boolean)
       true
   """
-  @spec env!(variable :: binary(), type :: atom()) :: any() | no_return()
+  @spec env!(variable :: binary(), type :: Dotenvy.Transformer.conversion_type()) ::
+          any() | no_return()
   def env!(variable, type \\ :string)
 
   def env!(variable, type) do
