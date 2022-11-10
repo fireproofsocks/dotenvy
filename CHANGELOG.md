@@ -3,11 +3,17 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.7.0
+
+- Formally defines a type for all supported conversions to improve documentation and specs
+- Updates dependencies to latest
+- Specifies Elixir 1.13 as required (simply because I can't get anything older to compile)
+
 ## v0.6.0
 
 - Does away with the confusing `:overwrite?` and `vars` options in favor of a simple declarative/explicit inputs. `source/2` now accepts ad-hoc maps as inputs.
 - Updates dependencies including `:ex_doc` to take advantage of admonishment blocks.
-- Various documentationa cleanups/clarifications.
+- Various documentation cleanups/clarifications.
 
 ## v0.5.0
 

@@ -6,24 +6,9 @@ defmodule Dotenvy.Transformer do
   _always_ store string binaries.
   """
 
-  defmodule Error do
-    @moduledoc false
-    defexception message: "non-empty value required"
-  end
-
-  @doc """
-  Converts strings into Elixir data types with support for nil-able values. Raises on error.
-
-  Each type determines how to interpret the incoming string, e.g. when the `type`
-  is `:integer`, an empty string is considered a `0`; when `:integer?` is the `type`,
-  and empty string is converted to `nil`.
-
-  Remember:
-
-  - Use a `?` suffix when an empty string should be considered `nil` (a.k.a. a "nullable" value).
-  - Use a `!` suffix when an empty string is not allowed. Use this when values are required.
-
-  ## Types
+  @typedoc """
+  The conversion type specifies the target data type to which a string will be converted.
+  For example, `:integer` would indicate a transformation of `"12"` to `12`.
 
   The following types are supported:
 
@@ -65,6 +50,54 @@ defmodule Dotenvy.Transformer do
   When you require more control over the transformation of your value than is possible
   with the types provided, you can provide an arity 1 function in place of the type.
 
+  """
+  @type conversion_type ::
+          :atom
+          | :atom?
+          | :atom!
+          | :boolean
+          | :boolean?
+          | :boolean!
+          | :charlist
+          | :charlist?
+          | :charlist!
+          | :integer
+          | :integer?
+          | :integer!
+          | :float
+          | :float?
+          | :float!
+          | :existing_atom
+          | :existing_atom?
+          | :existing_atom!
+          | :module
+          | :module?
+          | :module!
+          | :string
+          | :string?
+          | :string!
+          | (String.t() -> any())
+
+  defmodule Error do
+    @moduledoc false
+    defexception message: "non-empty value required"
+  end
+
+  @doc """
+  Converts strings into Elixir data types with support for nil-able values. Raises on error.
+
+  Each type determines how to interpret the incoming string, e.g. when the `type`
+  is `:integer`, an empty string is considered a `0`; when `:integer?` is the `type`,
+  and empty string is converted to `nil`.
+
+  Remember:
+
+  - Use a `?` suffix when an empty string should be considered `nil` (a.k.a. a "nullable" value).
+  - Use a `!` suffix when an empty string is not allowed. Use this when values are required.
+
+  ## Types
+
+  See the `t:conversion_types/0` for a description of valid
   ## Examples
 
       iex> to!("debug", :atom)
@@ -78,7 +111,7 @@ defmodule Dotenvy.Transformer do
       iex> to!("foo", fn val -> val <> "bar" end)
       "foobar"
   """
-  @spec to!(str :: binary(), type :: atom) :: any()
+  @spec to!(str :: binary(), type :: conversion_type) :: any()
   def to!(str, :atom) when is_binary(str) do
     str
     |> String.trim_leading(":")
