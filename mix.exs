@@ -31,9 +31,10 @@ defmodule Dotenvy.MixProject do
   def extras do
     [
       "README.md",
-      "CHANGELOG.md",
+      "cheatsheet.cheatmd",
+      "docs/strategies.md",
       "docs/dotenv-file-format.md",
-      "docs/strategies.md"
+      "CHANGELOG.md"
     ]
   end
 
@@ -58,6 +59,7 @@ defmodule Dotenvy.MixProject do
         "assets/logo.png",
         "mix.exs",
         "README*",
+        "cheatsheet.cheatmd",
         "CHANGELOG*",
         "LICENSE*"
       ]

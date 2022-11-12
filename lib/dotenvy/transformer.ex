@@ -97,7 +97,9 @@ defmodule Dotenvy.Transformer do
 
   ## Types
 
-  See the `t:conversion_types/0` for a description of valid
+  See the `t:Dotenvy.Transformer.conversion_type/0` for a description of valid
+  conversion types.
+
   ## Examples
 
       iex> to!("debug", :atom)

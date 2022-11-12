@@ -215,6 +215,10 @@ defmodule Dotenvy.TransformerTest do
     test "conversion" do
       assert Dotenvy.TransformerTest == T.to!("Dotenvy.TransformerTest", :module)
     end
+
+    test "empty string" do
+      assert :"Elixir." == T.to!("", :module)
+    end
   end
 
   describe "to!/2 :module?" do

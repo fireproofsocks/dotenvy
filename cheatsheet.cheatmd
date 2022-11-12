@@ -1,0 +1,191 @@
+# Cheatsheet
+
+Quick reference for using Dotenvy.
+
+## Setup
+{: .col-3}
+
+### envs/ Directory
+
+The recommended location for storing your `.env` files is inside a dedicated `envs/` directory.
+Code editors recognize the `.env` extension.
+
+#### Example envs/dev.env
+
+```env
+LOG_LEVEL=debug
+AWS_REGION="us-east-1"
+HTTP_CLIENT=HTTPoison
+```
+
+### Version Control
+
+`envs/dev.env` is tracked by Git. Use it to store sensible non-sensitive defaults.
+
+`envs/dev.local.env` is ignored by Git. Use it to override any variables in the tracked version.
+
+This must match the values used in the runtime configuration.
+
+#### .gitignore
+
+```
+*.local.env
+```
+
+### Release Compatibility
+
+For compatibility with [releases](https://hexdocs.pm/mix/Mix.Release.html), 
+configure your builds to copy (i.e. "overlay") the contents of your `envs/` 
+directory into the root of the release.
+
+#### mix.exs
+
+```elixir
+defp releases do
+[
+    my_app: [
+    include_executables_for: [:unix],
+    steps: [:assemble, :tar],
+    overlays: ["envs/", "priv/", "config/"]
+    ]
+]
+end
+```
+
+### Runtime Config
+
+Your `config/runtime.exs` is where you source your environment variables. 
+The last argument to `Dotenvy.source/2` or `Dotenvy.source!/2` takes precedence.
+It's common to use `System.get_env()` as the final argument so any existing system
+environment variables will take precedence over anything parsed from the `.env` files.
+
+#### config/runtime.exs
+
+```elixir
+import Config
+import Dotenvy
+
+dir = System.get_env("RELEASE_ROOT") || "envs/"
+  
+source!([
+  "#{dir}#{config_env()}.env",
+  "#{dir}#{config_env()}.local.env",
+  System.get_env()
+])
+```
+
+## Example Database Configuration
+{: .col-3}
+
+### Dev ENV
+
+#### envs/dev.env
+
+```
+PG_USERNAME=postgres
+PG_PASSWORD=postgres
+PG_HOSTNAME=localhost
+PG_PORT=5432
+PG_DATABASE=m_app_dev
+PG_POOL_SIZE=10
+PG_POOL=DBConnection.ConnectionPool
+PG_SSL=true
+```
+
+### Test ENV
+
+#### envs/test.env
+
+```
+PG_USERNAME=postgres
+PG_PASSWORD=postgres
+PG_HOSTNAME=localhost
+PG_PORT=5432
+PG_DATABASE=my_app_test
+PG_POOL_SIZE=10
+PG_POOL=Ecto.Adapters.SQL.Sandbox
+PG_SSL=false
+```
+
+### Runtime Configuration
+
+#### config/runtime.env
+
+```
+import Config
+import Dotenvy
+
+dir = System.get_env("RELEASE_ROOT") || "envs/"
+  
+source!([
+  "#{dir}#{config_env()}.env",
+  "#{dir}#{config_env()}.local.env",
+  System.get_env()
+])
+
+config :my_app, MyApp.PGRepo,
+  pool: env!("PG_POOL", :module?),
+  pool_size: env!("PG_POOL_SIZE", :integer),
+  database: env!("PG_DATABASE", :string),
+  username: env!("PG_USERNAME", :string),
+  password: env!("PG_PASSWORD", :string),
+  port: env!("PG_PORT", :integer),
+  hostname: env!("PG_HOSTNAME", :string)
+```
+
+## Transformations
+
+System Environment variables are always stored as strings which may need to be 
+transformed into native Elixir data types.
+
+#### Used as the 2nd argument to `Dotenvy.env!/2` and `Dotenvy.env!/3`
+
+| Conversion Type   | Elixir Type   | On Empty String   |
+| --                | --            | --                |
+| `:atom`           | atom          | `:""`             |
+| `:atom?`          | atom          | `nil`             |
+| `:atom!`          | atom          | raise ⚠           |
+| `:boolean`        | boolean       | `false`           |
+| `:boolean?`       | boolean       | `nil`             |
+| `:boolean!`       | boolean       | raise ⚠           |
+| `:charlist`       | charlist      | `''` i.e. `[]`    |
+| `:charlist?`      | charlist      | `nil`             |
+| `:charlist!`      | charlist      | raise ⚠           |
+| `:integer`        | integer       | `0`               |
+| `:integer?`       | integer       | `nil`             |
+| `:integer!`       | integer       | raise ⚠           |
+| `:float`          | float         | `0`               |
+| `:float?`         | float         | `nil`             |
+| `:float!`         | float         | raise ⚠           |
+| `:existing_atom`  | atom          | `:""` or raise    |
+| `:existing_atom?` | atom          | `nil`             |
+| `:existing_atom!` | atom          | raise ⚠           |
+| `:module`         | atom          | `:"Elixir."`      |
+| `:module?`        | atom          | `nil`             |
+| `:module!`        | atom          | raise ⚠           |
+| `:string`         | String        | `""`              |
+| `:string?`        | String        | `nil`             |
+| `:string!`        | String        | raise ⚠           |
+
+Custom functions handle their own behavior.
+
+#### Custom Function Example
+
+```env
+PHX_IP="0, 0, 0, 0, 0, 0, 0, 0"
+```
+
+```elixir
+config :feenix, FeenixWeb.Endpoint,
+    http: [
+      # Enable IPv6 and bind on all interfaces.
+      ip: env!("PHX_IP", fn ip -> 
+        ip 
+        |> String.split(",") 
+        |> Enum.map(&String.trim/1) 
+        |> Enum.map(&String.to_integer/1) 
+        |> List.to_tuple()
+      end)
+    ],
+```
+
