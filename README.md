@@ -15,38 +15,12 @@ Add `dotenvy` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:dotenvy, "~> 0.6.0"}
+    {:dotenvy, "~> 0.7.0"}
   ]
 end
 ```
 
 It has no dependencies.
-
-## Upgrading from v0.5.0 or before
-
-Starting with Dotenvy v0.6.0, the precedence of system env variables over parsed `.env` files is not defined; the `:overwrite?` and `:vars` options are no longer supported in `Dotenvy.source/2` and `Dotenvy.source!/2`. Instead, the `source` functions now accept file paths OR maps: this makes the question of variable precedence something that must be explicitly listed. The `source` functions act more like `Map.merge/2`, accumulating values, always giving precedence to the righthand source.
-
-Most users upgrading from v0.5.0 will wish to include `System.get_env()` as the final input to `source/2`.
-
-```elixir
-# in dotenvy 0.5.0 or before:
-source(["#{config_env()}.env", "#{config_env()}.override.env"])
-
-# should be changed to the following in dotenvy 0.6.0:
-source(["#{config_env()}.env", "#{config_env()}.override.env", System.get_env()])
-```
-
-If you are relying on [variable interpolation](docs/dotenv-file-format.md) in your `.env` files, you may also need to include `System.get_env()` (or an equivalent subset) _before_ you list your `.env` files.  This is necessary to make values available to the file parser.
-
-```elixir
-# in dotenvy 0.5.0 or before:
-source(["#{config_env()}.env", "#{config_env()}.override.env"])
-
-# should be changed to the following in dotenvy 0.6.0:
-source([System.get_env(), "#{config_env()}.env", "#{config_env()}.override.env", System.get_env()])
-```
-
-The change in syntax introduced in v0.6.0 favors a declarative list of sources over opaquely inferred inputs. This also opens the door for compatibility with other value sources, e.g. secure parameter stores.
 
 ## Usage
 
@@ -87,7 +61,7 @@ config :myapp, MyApp.Repo,
 
 And then define your variables in the file(s) to be sourced. `Dotenvy` has no opinions about what you name your files; `.env` is merely a convention.
 
-```
+```env
 # .env
 DATABASE=myapp_dev
 USERNAME=myuser
@@ -124,6 +98,32 @@ If you are dealing with third-party mix tasks that fail to properly load configu
 ```sh
 mix do app.config other.task
 ```
+
+## Upgrading from v0.5.0 or before
+
+Starting with Dotenvy v0.6.0, the precedence of system env variables over parsed `.env` files is not defined; the `:overwrite?` and `:vars` options are no longer supported in `Dotenvy.source/2` and `Dotenvy.source!/2`. Instead, the `source` functions now accept file paths OR maps: this makes the question of variable precedence something that must be explicitly listed. The `source` functions act more like `Map.merge/2`, accumulating values, always giving precedence to the righthand source.
+
+Most users upgrading from v0.5.0 will wish to include `System.get_env()` as the final input to `source/2`.
+
+```elixir
+# in dotenvy 0.5.0 or before:
+source(["#{config_env()}.env", "#{config_env()}.override.env"])
+
+# should be changed to the following in dotenvy 0.6.0:
+source(["#{config_env()}.env", "#{config_env()}.override.env", System.get_env()])
+```
+
+If you are relying on [variable interpolation](docs/dotenv-file-format.md) in your `.env` files, you may also need to include `System.get_env()` (or an equivalent subset) _before_ you list your `.env` files.  This is necessary to make values available to the file parser.
+
+```elixir
+# in dotenvy 0.5.0 or before:
+source(["#{config_env()}.env", "#{config_env()}.override.env"])
+
+# should be changed to the following in dotenvy 0.6.0:
+source([System.get_env(), "#{config_env()}.env", "#{config_env()}.override.env", System.get_env()])
+```
+
+The change in syntax introduced in v0.6.0 favors a declarative list of sources over opaquely inferred inputs. This also opens the door for compatibility with other value sources, e.g. secure parameter stores.
 
 ---------------------------------------------------
 
