@@ -53,8 +53,8 @@ defmodule Dotenvy do
   variable is _not_ set; **the `default` value is returned as-is, without conversion**.
   This allows greater control of the output.
 
-  This function may raise an error when the conversion is delegated to `Dotenvy.Transformer.to!/2`
-  -- see its documentation for a list of supported types.
+  Conversion is delegated to `Dotenvy.Transformer.to!/2`, which may raise an error.
+  See its documentation for a list of supported types.
 
   This function attempts to read a value from a local data store of sourced values;
   it will fall back to `System.fetch_env/1` when no locally stored variable is available.
@@ -63,8 +63,10 @@ defmodule Dotenvy do
 
       iex> env!("PORT", :integer, 5432)
       5433
+
       iex> env!("NOT_SET", :boolean, %{not: "converted"})
       %{not: "converted"}
+
       iex> System.put_env("HOST", "")
       iex> env!("HOST", :string!, "localhost")
       ** (RuntimeError) Error converting HOST to string!: non-empty value required
