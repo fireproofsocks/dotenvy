@@ -7,6 +7,30 @@ defmodule Dotenvy.ParserTest do
     test ":ok for comments and empty lines", %{contents: contents} do
       assert {:ok, %{}} = P.parse(contents)
     end
+
+    @tag :skip
+    # See https://docs.docker.com/compose/environment-variables/env-file/
+    test "hashtags must be preceded by an empty space" do
+      assert {:ok, %{"VAR" => "VAL# not a comment"}} = P.parse("VAR=VAL# not a comment")
+    end
+  end
+
+  describe "parse/3 lines" do
+    test ":error on improper key" do
+      assert {:error, _} = P.parse("KEY_WITHOUT_VALUE\n")
+    end
+
+    test ":error on improperly closed value" do
+      assert {:error, _} = P.parse("KEY=\"missing-quote")
+    end
+
+    test ":error on improper sequence before opening double-quote" do
+      assert {:error, _} = P.parse("KEY=oops\"quoted\"")
+    end
+
+    test ":error on improper sequence before opening single-quote" do
+      assert {:error, _} = P.parse("KEY=oops'quoted'")
+    end
   end
 
   describe "parse/3 double-quotes" do
@@ -33,6 +57,14 @@ defmodule Dotenvy.ParserTest do
 
     test ":error for too many hex characters" do
       assert {:error, _} = P.parse("FOO=\\uZZZZoops")
+    end
+
+    test "error on invalid unicode (non base-16)" do
+      assert {:error, _} = P.parse("FOO=\\uXÜ9foo")
+    end
+
+    test "error on incomplete unicode" do
+      assert {:error, _} = P.parse("FOO=\\uAB")
     end
   end
 
@@ -94,6 +126,12 @@ defmodule Dotenvy.ParserTest do
     end
   end
 
+  describe "parse/3 interpolation" do
+    test ":error when interpolated variable lacks closing brace" do
+      assert {:error, _} = P.parse("A=${B", %{})
+    end
+  end
+
   describe "parse/3 unquoted" do
     @tag contents: "unquoted.env"
     test ":ok", %{contents: contents} do
@@ -106,7 +144,7 @@ defmodule Dotenvy.ParserTest do
               }} == P.parse(contents)
     end
 
-    test ":error on interpolating non-existing" do
+    test ":error on interpolating non-existing var" do
       assert {:error, _} = P.parse("A=${B}", %{})
     end
   end

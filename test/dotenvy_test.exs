@@ -15,6 +15,36 @@ defmodule DotenvyTest do
       System.put_env("TEST_VALUE", "#{test}")
       assert "#{test}" == env!("TEST_VALUE", :string, nil)
     end
+
+    test "built-in conversion errors convert to RuntimeError", %{test: test} do
+      System.put_env("TEST_VALUE", "#{test}")
+
+      assert_raise RuntimeError, fn ->
+        env!("TEST_VALUE", :integer, 123)
+      end
+    end
+
+    test "raising Dotenvy.Error with custom message converts to RuntimeError", %{test: test} do
+      System.put_env("TEST_VALUE", "#{test}")
+
+      assert_raise RuntimeError, ~r/Custom error/, fn ->
+        env!(
+          "TEST_VALUE",
+          fn _ ->
+            raise Dotenvy.Error, message: "Custom error"
+          end,
+          "default"
+        )
+      end
+    end
+
+    test "raising other error types passes thru", %{test: test} do
+      System.put_env("TEST_VALUE", "#{test}")
+
+      assert_raise FunctionClauseError, fn ->
+        env!("TEST_VALUE", fn _ -> Keyword.get(%{}, :foo) end, "default")
+      end
+    end
   end
 
   describe "env!/2" do
@@ -26,6 +56,32 @@ defmodule DotenvyTest do
     test "raises when variable not set" do
       assert_raise RuntimeError, fn ->
         env!("DOES_NOT_EXIST", :string!)
+      end
+    end
+
+    test "built-in conversion errors convert to RuntimeError", %{test: test} do
+      System.put_env("TEST_VALUE", "#{test}")
+
+      assert_raise RuntimeError, fn ->
+        env!("TEST_VALUE", :integer)
+      end
+    end
+
+    test "raising Dotenvy.Error with custom message converts to RuntimeError", %{test: test} do
+      System.put_env("TEST_VALUE", "#{test}")
+
+      assert_raise RuntimeError, ~r/Custom error/, fn ->
+        env!("TEST_VALUE", fn _ ->
+          raise Dotenvy.Error, message: "Custom error"
+        end)
+      end
+    end
+
+    test "raising other error types passes thru", %{test: test} do
+      System.put_env("TEST_VALUE", "#{test}")
+
+      assert_raise FunctionClauseError, fn ->
+        env!("TEST_VALUE", fn _ -> Keyword.get(%{}, :foo) end)
       end
     end
   end
@@ -45,9 +101,14 @@ defmodule DotenvyTest do
                source(["test/support/files/a.env", "test/support/files/b.env"], vars: %{})
     end
 
-    test "system env vars not set" do
+    test "system env vars not set when listed in sourced file" do
       assert {:ok, _} = source(["test/support/files/a.env"])
       assert :error == System.fetch_env("B")
+    end
+
+    test "source variables available to env!/2", %{test: test} do
+      {:ok, _} = source([%{"#{test}" => "#{test}"}])
+      assert "#{test}" == env!("#{test}")
     end
 
     test "enforces list of :require_files" do
