@@ -40,6 +40,34 @@ defmodule Dotenvy do
   @callback parse(contents :: binary(), vars :: map(), opts :: keyword()) ::
               {:ok, map()} | {:error, any()}
 
+  defmodule Error do
+    @moduledoc """
+    This error module can be useful when writing your own custom conversion
+    functions because special contextual information will be included with any
+    errors.
+
+    ## Examples
+
+    Let's say your configuration needs to supply one of a set of possible values
+    (i.e. an enum). We can define a custom function to support this and pass it
+    as the second argument to `Dotenvy.env!/2`
+
+        # runtime.exs
+        import Config
+        import Dotenvy
+
+        size_enum = fn
+          "large" -> :large
+          "small" -> :small
+          _ ->
+            raise Dotenvy.Error, message: "allowed size_enum values are large or small"
+        end
+
+        config :myapp, :some_bool, env!("SIZE", size_enum)
+    """
+    defexception message: "non-empty value required"
+  end
+
   @doc """
   Reads an env variable and converts its output or returns a default value.
 
@@ -84,7 +112,16 @@ defmodule Dotenvy do
     end
   rescue
     error in Error ->
-      reraise "Error converting #{variable} to #{type}: #{error.message}", __STACKTRACE__
+      if is_function(type) do
+        reraise "Error converting variable #{variable} using custom function: #{error.message}",
+                __STACKTRACE__
+      else
+        reraise "Error converting variable #{variable} to #{type}: #{error.message}",
+                __STACKTRACE__
+      end
+
+    error ->
+      reraise error, __STACKTRACE__
   end
 
   @deprecated "Use `Dotenvy.env!/3` instead"
@@ -120,7 +157,13 @@ defmodule Dotenvy do
     end
   rescue
     error in Error ->
-      reraise "Error converting variable #{variable} to #{type}: #{error.message}", __STACKTRACE__
+      if is_function(type) do
+        reraise "Error converting variable #{variable} using custom function: #{error.message}",
+                __STACKTRACE__
+      else
+        reraise "Error converting variable #{variable} to #{type}: #{error.message}",
+                __STACKTRACE__
+      end
 
     error ->
       reraise error, __STACKTRACE__
@@ -150,9 +193,8 @@ defmodule Dotenvy do
 
   - `:side_effect` an arity 1 function called after the successful parsing inputs.
     The default is an internal function that stores the values inside a process dictionary so
-    the values are available to the `env!/2` and `env!/3` functions.
-    You may also set this value to `false` to disable a side-effect altogether, but this will
-    effectively neutralize the `env!/2` function.
+    the values are available to the `env!/2` and `env!/3` functions. This option
+    is overridable to facilitate testing. Changing it is not recommended.
 
   ## Examples
 
@@ -193,7 +235,7 @@ defmodule Dotenvy do
 
   If your env files are making use of variable substitution based on system env vars,
   e.g. `${PWD}` (see the [Dotenv File Format](docs/dotenv-file-format.md)), then you
-  would need to include `System.get_env()` _before_ your inputs.
+  would need to specify `System.get_env()` as the first argument to `source/2`.
 
   For example, if your `.env` references the system `HOME` variable:
     ```
