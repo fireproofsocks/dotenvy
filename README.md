@@ -15,7 +15,7 @@ Add `dotenvy` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:dotenvy, "~> 0.7.0"}
+    {:dotenvy, "~> 0.8.0"}
   ]
 end
 ```
@@ -71,7 +71,7 @@ POOL_SIZE=10
 POOL=
 ```
 
-When you set up your application configuration in this way, you are creating a contract with the environment: `Dotenvy.env!/2` will raise if the required variables have not been set or if the values cannot be properly transformed. This is an approach that works equally well for your day-to-day development and testing, as well as for mix releases.
+When you set up your application configuration in this way, you are creating a contract with the environment: `Dotenvy.env!/2` will raise if the required variables have not been set or if the values cannot be properly transformed. This is an approach that works equally well for your day-to-day development and for mix releases.
 
 Read the [configuration strategies](docs/strategies.md) for more detailed examples of how to configure your app.
 
@@ -97,6 +97,16 @@ If you are dealing with third-party mix tasks that fail to properly load configu
 
 ```sh
 mix do app.config other.task
+```
+
+Defining a task `alias` in `mix.exs` is another way to accomplish this:
+
+```elixir
+# mix.exs
+defp aliases do
+    [
+      "other.task": ["app.config", "other.task"]
+    ]
 ```
 
 ## Upgrading from v0.5.0 or before

@@ -3,6 +3,17 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.8.0
+
+- Enables exception rescuing to report on problems with custom callback functions
+- Moves `Dotenvy.Transformer.Error` to `Dotenvy.Error` to offer a simpler interface
+  for devs who want to raise errors from custom transformer functions
+- Improved documentation and examples for usage in umbrella apps
+- Updates all internal options in the parser to use `%Opts{}` struct
+- Improves test coverage
+- Bumps Elixir version specified for local development in `.tool-versions`
+- Updates dependencies to latest
+
 ## v0.7.0
 
 - Formally defines a type for all supported conversions to improve documentation and specs
