@@ -19,7 +19,7 @@ defmodule Dotenvy.TransformerTest do
 
   describe "to!/2 :atom!" do
     test "nil raise" do
-      assert_raise Dotenvy.Transformer.Error, fn ->
+      assert_raise Dotenvy.Error, fn ->
         T.to!("", :atom!)
       end
     end
@@ -61,7 +61,7 @@ defmodule Dotenvy.TransformerTest do
 
   describe "to!/2 :boolean!" do
     test "empty string raises" do
-      assert_raise Dotenvy.Transformer.Error, fn ->
+      assert_raise Dotenvy.Error, fn ->
         T.to!("", :boolean!)
       end
     end
@@ -93,7 +93,7 @@ defmodule Dotenvy.TransformerTest do
 
   describe "to!/2 :charlist!" do
     test "raise on empty string" do
-      assert_raise Dotenvy.Transformer.Error, fn ->
+      assert_raise Dotenvy.Error, fn ->
         T.to!("", :charlist!)
       end
     end
@@ -106,6 +106,12 @@ defmodule Dotenvy.TransformerTest do
   describe "to!/2 :existing_atom" do
     test "convert" do
       assert :dev == T.to!("dev", :existing_atom)
+    end
+
+    test "raise when value is not existing atom" do
+      assert_raise Dotenvy.Error, fn ->
+        T.to!("this-is-not-existing", :existing_atom)
+      end
     end
   end
 
@@ -121,7 +127,7 @@ defmodule Dotenvy.TransformerTest do
 
   describe "to!/2 :existing_atom!" do
     test "raise on empty string" do
-      assert_raise Dotenvy.Transformer.Error, fn ->
+      assert_raise Dotenvy.Error, fn ->
         T.to!("", :existing_atom!)
       end
     end
@@ -141,7 +147,7 @@ defmodule Dotenvy.TransformerTest do
     end
 
     test "raises on unparsable" do
-      assert_raise Dotenvy.Transformer.Error, fn ->
+      assert_raise Dotenvy.Error, fn ->
         T.to!("Abc", :float)
       end
     end
@@ -159,7 +165,7 @@ defmodule Dotenvy.TransformerTest do
 
   describe "to!/2 :float!" do
     test "raise on empty string" do
-      assert_raise Dotenvy.Transformer.Error, fn ->
+      assert_raise Dotenvy.Error, fn ->
         T.to!("", :float!)
       end
     end
@@ -183,7 +189,7 @@ defmodule Dotenvy.TransformerTest do
     end
 
     test "raises on unparsable" do
-      assert_raise Dotenvy.Transformer.Error, fn ->
+      assert_raise Dotenvy.Error, fn ->
         T.to!("Abc", :integer)
       end
     end
@@ -201,7 +207,7 @@ defmodule Dotenvy.TransformerTest do
 
   describe "to!/2 :integer!" do
     test "raise on empty string" do
-      assert_raise Dotenvy.Transformer.Error, fn ->
+      assert_raise Dotenvy.Error, fn ->
         T.to!("", :integer!)
       end
     end
@@ -233,7 +239,7 @@ defmodule Dotenvy.TransformerTest do
 
   describe "to!/2 :module!" do
     test "raise on empty string" do
-      assert_raise Dotenvy.Transformer.Error, fn ->
+      assert_raise Dotenvy.Error, fn ->
         T.to!("", :module!)
       end
     end
@@ -261,7 +267,7 @@ defmodule Dotenvy.TransformerTest do
 
   describe "to!/2 :string!" do
     test "raise on empty string" do
-      assert_raise Dotenvy.Transformer.Error, fn ->
+      assert_raise Dotenvy.Error, fn ->
         T.to!("", :string!)
       end
     end
@@ -279,13 +285,13 @@ defmodule Dotenvy.TransformerTest do
 
   describe "to!/2 errors" do
     test "unsupported type" do
-      assert_raise Dotenvy.Transformer.Error, fn ->
+      assert_raise Dotenvy.Error, fn ->
         T.to!("ff", :not_supported)
       end
     end
 
     test "unsupported input" do
-      assert_raise Dotenvy.Transformer.Error, fn ->
+      assert_raise Dotenvy.Error, fn ->
         T.to!(false, :string)
       end
     end

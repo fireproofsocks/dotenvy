@@ -5,6 +5,7 @@ defmodule Dotenvy.Transformer do
   These conversions were designed to operate on system environment variables, which
   _always_ store string binaries.
   """
+  alias Dotenvy.Error
 
   @typedoc """
   The conversion type specifies the target data type to which a string will be converted.
@@ -78,11 +79,6 @@ defmodule Dotenvy.Transformer do
           | :string!
           | (String.t() -> any())
 
-  defmodule Error do
-    @moduledoc false
-    defexception message: "non-empty value required"
-  end
-
   @doc """
   Converts strings into Elixir data types with support for nil-able values. Raises on error.
 
@@ -113,7 +109,7 @@ defmodule Dotenvy.Transformer do
       iex> to!("foo", fn val -> val <> "bar" end)
       "foobar"
   """
-  @spec to!(str :: binary(), type :: conversion_type) :: any()
+  @spec to!(str :: binary(), type :: conversion_type()) :: any()
   def to!(str, :atom) when is_binary(str) do
     str
     |> String.trim_leading(":")

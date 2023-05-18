@@ -59,7 +59,7 @@ defmodule Dotenvy.Parser do
   defp find_key(<<?\n, tail::binary>>, acc, vars) do
     case String.trim(acc) do
       "" -> find_key(tail, "", vars)
-      _ -> {:error, "Invalid syntax for line. Key not found: #{inspect(acc)}"}
+      _ -> {:error, "Invalid syntax for line. No equals sign for key: #{inspect(acc)}"}
     end
   end
 
@@ -77,7 +77,7 @@ defmodule Dotenvy.Parser do
          <<?', ?', ?', tail::binary>>,
          acc,
          %{} = vars,
-         %{key: key, stop_on: nil}
+         %Opts{key: key, stop_on: nil}
        ) do
     case String.trim(acc) do
       "" ->
@@ -85,7 +85,7 @@ defmodule Dotenvy.Parser do
 
         case String.trim(acc) do
           "" ->
-            find_value(tail, "", vars, %{
+            find_value(tail, "", vars, %Opts{
               key: key,
               interpolate?: false,
               stop_on: <<?', ?', ?'>>
@@ -105,7 +105,7 @@ defmodule Dotenvy.Parser do
          <<?", ?", ?", tail::binary>>,
          acc,
          %{} = vars,
-         %{key: key, stop_on: nil}
+         %Opts{key: key, stop_on: nil}
        ) do
     case String.trim(acc) do
       "" ->
@@ -113,7 +113,7 @@ defmodule Dotenvy.Parser do
 
         case String.trim(acc) do
           "" ->
-            find_value(tail, "", vars, %{
+            find_value(tail, "", vars, %Opts{
               key: key,
               interpolate?: true,
               stop_on: <<?", ?", ?">>
@@ -133,7 +133,7 @@ defmodule Dotenvy.Parser do
          <<h::binary-size(3), tail::binary>>,
          acc,
          vars,
-         %{key: key, stop_on: stop}
+         %Opts{key: key, stop_on: stop}
        )
        when h == stop and stop != nil do
     {tail, rest_of_line} = accumulate_rest_of_line(tail, "")
@@ -152,7 +152,7 @@ defmodule Dotenvy.Parser do
        ) do
     case String.trim(acc) do
       "" ->
-        find_value(tail, "", vars, %{key: key, interpolate?: true, stop_on: <<?">>})
+        find_value(tail, "", vars, %Opts{key: key, interpolate?: true, stop_on: <<?">>})
 
       _ ->
         {:error, "Improper syntax before opening quote: #{inspect(acc)}"}
@@ -167,7 +167,7 @@ defmodule Dotenvy.Parser do
        ) do
     case String.trim(acc) do
       "" ->
-        find_value(tail, "", vars, %{key: key, interpolate?: false, stop_on: <<?'>>})
+        find_value(tail, "", vars, %Opts{key: key, interpolate?: false, stop_on: <<?'>>})
 
       _ ->
         {:error, "Improper syntax before opening quote: #{inspect(acc)}"}
@@ -199,7 +199,7 @@ defmodule Dotenvy.Parser do
   end
 
   # Variable interpolation
-  defp find_value(<<?$, ?{, tail::binary>>, acc, vars, %{interpolate?: true} = opts) do
+  defp find_value(<<?$, ?{, tail::binary>>, acc, vars, %Opts{interpolate?: true} = opts) do
     case acc_varname(tail, "", <<?}>>) do
       {:ok, acc_varname, tail} ->
         varname = String.trim(acc_varname)
@@ -218,7 +218,7 @@ defmodule Dotenvy.Parser do
          <<h::binary-size(1), tail::binary>>,
          acc,
          vars,
-         %{key: key, stop_on: stop}
+         %Opts{key: key, stop_on: stop}
        )
        when h == stop and stop != nil do
     {tail, rest_of_line} = accumulate_rest_of_line(tail, "")
@@ -238,7 +238,7 @@ defmodule Dotenvy.Parser do
          <<?\\, char::utf8, tail::binary>>,
          acc,
          vars,
-         %{interpolate?: true} = opts
+         %Opts{interpolate?: true} = opts
        ) do
     case char do
       ?n -> find_value(tail, acc <> "\n", vars, opts)
@@ -255,7 +255,7 @@ defmodule Dotenvy.Parser do
     end
   end
 
-  defp find_value("", _acc, _vars, %{key: key, stop_on: stop} = _opts)
+  defp find_value("", _acc, _vars, %Opts{key: key, stop_on: stop} = _opts)
        when key != nil and stop != nil do
     {:error,
      "Could not parse value for #{inspect(key)}. Stop sequence not found: #{inspect(stop)}"}
@@ -290,15 +290,15 @@ defmodule Dotenvy.Parser do
     accumulate_rest_of_line(tail, acc <> <<char>>)
   end
 
-  defp do_unicode(<<hex_chars::binary-size(4), tail::binary>>, acc, vars, %{key: key} = opts) do
+  defp do_unicode(<<hex_chars::binary-size(4), tail::binary>>, acc, vars, %Opts{key: key} = opts) do
     case Integer.parse(hex_chars, 16) do
       {as_integer, ""} -> find_value(tail, acc <> <<as_integer::utf8>>, vars, opts)
       _ -> {:error, "Invalid unicode format for key #{key}: \\u#{hex_chars}"}
     end
   end
 
-  defp do_unicode(_, _, _, _) do
-    {:error, "Invalid unicode format."}
+  defp do_unicode(_, _, _, %Opts{key: key}) do
+    {:error, "Invalid unicode format for key #{key}: incomplete"}
   end
 
   # Moves the cursor up to the next line, e.g. after a `#`

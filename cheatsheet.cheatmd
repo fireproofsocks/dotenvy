@@ -66,6 +66,8 @@ import Config
 import Dotenvy
 
 dir = System.get_env("RELEASE_ROOT") || "envs/"
+# In an umbrella app:
+# dir = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
   
 source!([
   "#{dir}#{config_env()}.env",
@@ -189,3 +191,23 @@ config :feenix, FeenixWeb.Endpoint,
     ],
 ```
 
+Your custom functions can raise a `Dotenvy.Error` to benefit from improved messages
+that include helpful context about any problems, e.g.
+
+```elixir
+strict_boolean! = fn
+  "true" -> true
+  "false" -> false
+  _ ->
+    raise Dotenvy.Error,
+      message: "strict_boolean! values must be either true or false"
+end
+
+config :myapp, :some_bool, env!("SOME_BOOL", strict_boolean!)
+```
+
+This will yield an error like the following:
+
+```
+** (RuntimeError) Error converting variable SOME_BOOL using custom function: strict_boolean! values must be either true or false
+```
