@@ -111,7 +111,7 @@ PG_SSL=false
 
 ### Runtime Configuration
 
-#### config/runtime.env
+#### config/runtime.exs
 
 ```
 import Config
