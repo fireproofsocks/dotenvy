@@ -49,6 +49,23 @@ defmodule Dotenvy.ParserTest do
     end
   end
 
+  describe "parse/3 multi-lines" do
+    @tag contents: "multiline.env"
+    test ":ok", %{contents: contents} do
+      assert {:ok,
+              %{
+                "MSG_A" => "\nHello from MSG_A\n",
+                "MSG_B" => "Hello from MSG_B\n",
+                "MSG_C" => "Hello from MSG_C\n",
+                "MSG_D" => "Hello from MSG_D interpolating \"\nHello from MSG_A\n\"\n",
+                "MSG_E" => "Hello from MSG_E without interpolating \"${MSG_B}\"\n",
+                "MSG_F" => "\nHello from MSG_F\n",
+                "MSG_G" => "\nHello from MSG_G with\nlots of text\n"
+              }} ==
+               P.parse(contents)
+    end
+  end
+
   describe "parse/3 escape sequences" do
     @tag contents: "escaped.env"
     test ":ok", %{contents: contents} do
