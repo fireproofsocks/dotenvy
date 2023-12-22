@@ -27,8 +27,8 @@ ecto_repos: [MyApp.Repo]
 
 config :myapp, MyApp.Repo,
 migration_timestamps: [
-    type: :utc_datetime,
-    inserted_at: :created_at
+  type: :utc_datetime,
+  inserted_at: :created_at
 ]
 ```
 
@@ -41,23 +41,23 @@ import Dotenvy
 source([".env", System.get_env()])
 
 if config_env() == "test" do
-    config :myapp, MyApp.Repo,
-        database: "myapp_test",
-        username: "test-user",
-        password: "test-password",
-        hostname: "localhost",
-        pool_size: 10,
-        adapter: Ecto.Adapters.Postgres,
-        pool: Ecto.Adapters.SQL.Sandbox
+  config :myapp, MyApp.Repo,
+    database: "myapp_test",
+    username: "test-user",
+    password: "test-password",
+    hostname: "localhost",
+    pool_size: 10,
+    adapter: Ecto.Adapters.Postgres,
+    pool: Ecto.Adapters.SQL.Sandbox
 else
-    config :myapp, MyApp.Repo,
-        database: env!("DATABASE", :string!),
-        username: env!("USERNAME", :string),
-        password: env!("PASSWORD", :string),
-        hostname: env!("HOSTNAME", :string!),
-        pool_size: env!("POOL_SIZE", :integer),
-        adapter: env("ADAPTER", :module, Ecto.Adapters.Postgres),
-        pool: env!("POOL", :module?)
+  config :myapp, MyApp.Repo,
+    database: env!("DATABASE", :string!),
+    username: env!("USERNAME", :string),
+    password: env!("PASSWORD", :string),
+    hostname: env!("HOSTNAME", :string!),
+    pool_size: env!("POOL_SIZE", :integer),
+    adapter: env("ADAPTER", :module, Ecto.Adapters.Postgres),
+    pool: env!("POOL", :module?)
 end
 ```
 
@@ -93,8 +93,8 @@ ecto_repos: [MyApp.Repo]
 
 config :myapp, MyApp.Repo,
 migration_timestamps: [
-    type: :utc_datetime,
-    inserted_at: :created_at
+  type: :utc_datetime,
+  inserted_at: :created_at
 ]
 ```
 
@@ -107,13 +107,13 @@ import Dotenvy
 source([".env", ".env.\#{config_env()}", System.get_env()])
 
 config :myapp, MyApp.Repo,
-    database: env!("DATABASE", :string!),
-    username: env!("USERNAME", :string),
-    password: env!("PASSWORD", :string),
-    hostname: env!("HOSTNAME", :string!),
-    pool_size: env!("POOL_SIZE", :integer),
-    adapter: env("ADAPTER", :module, Ecto.Adapters.Postgres),
-    pool: env!("POOL", :module?)
+  database: env!("DATABASE", :string!),
+  username: env!("USERNAME", :string),
+  password: env!("PASSWORD", :string),
+  hostname: env!("HOSTNAME", :string!),
+  pool_size: env!("POOL_SIZE", :integer),
+  adapter: env("ADAPTER", :module, Ecto.Adapters.Postgres),
+  pool: env!("POOL", :module?)
 ```
 
 ### `.env` (dev or prod)
@@ -159,11 +159,11 @@ One of the hurdles when dealing with Elixir releases is that only certain files 
 ```elixir
 # mix.exs
 defp releases do
-    [
+  [
     myapp: [
         overlays: ["envs/"]
     ]
-    ]
+  ]
 end
 ```
 
@@ -178,21 +178,21 @@ import Dotenvy
 # For local development, read dotenv files inside the envs/ dir;
 # for releases, read them at the RELEASE_ROOT
 config_dir_prefix =
-System.fetch_env("RELEASE_ROOT")
-|> case do
+  System.fetch_env("RELEASE_ROOT")
+  |> case do
     :error ->
-    "envs/"
+      "envs/"
 
     {:ok, value} ->
-    IO.puts("Loading dotenv files from #{value}")
-    "#{value}/"
+      IO.puts("Loading dotenv files from #{value}")
+      "#{value}/"
 end
 
 source!([
-"#{config_dir_prefix}.env",
-"#{config_dir_prefix}.#{config_env()}.env",
-"#{config_dir_prefix}.#{config_env()}.local.env"
-System.get_env()
+  "#{config_dir_prefix}.env",
+  "#{config_dir_prefix}.#{config_env()}.env",
+  "#{config_dir_prefix}.#{config_env()}.local.env"
+  System.get_env()
 ])
 ```
 
@@ -220,8 +220,8 @@ In particular, you have to be very careful about relative paths when working in 
 env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
 
 source!([
-    "#{env_dir_prefix}#{config_env()}.env",
-    "#{env_dir_prefix}#{config_env()}.local.env",
-    System.get_env()
+  "#{env_dir_prefix}#{config_env()}.env",
+  "#{env_dir_prefix}#{config_env()}.local.env",
+  System.get_env()
 ])
 ```
