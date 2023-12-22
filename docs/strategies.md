@@ -18,53 +18,59 @@ Let's look at the three files that will make this work:
 
 ### `config/config.exs`
 
-    # compile-time config
-    import Config
+```elixir
+# compile-time config
+import Config
 
-    config :myapp,
-    ecto_repos: [MyApp.Repo]
+config :myapp,
+ecto_repos: [MyApp.Repo]
 
-    config :myapp, MyApp.Repo,
-    migration_timestamps: [
-        type: :utc_datetime,
-        inserted_at: :created_at
-    ]
+config :myapp, MyApp.Repo,
+migration_timestamps: [
+    type: :utc_datetime,
+    inserted_at: :created_at
+]
+```
 
 ### `config/runtime.exs`
 
-    import Config
-    import Dotenvy
+```elixir
+import Config
+import Dotenvy
 
-    source([".env", System.get_env()])
+source([".env", System.get_env()])
 
-    if config_env() == "test" do
-        config :myapp, MyApp.Repo,
-            database: "myapp_test",
-            username: "test-user",
-            password: "test-password",
-            hostname: "localhost",
-            pool_size: 10,
-            adapter: Ecto.Adapters.Postgres,
-            pool: Ecto.Adapters.SQL.Sandbox
-    else
-        config :myapp, MyApp.Repo,
-            database: env!("DATABASE", :string!),
-            username: env!("USERNAME", :string),
-            password: env!("PASSWORD", :string),
-            hostname: env!("HOSTNAME", :string!),
-            pool_size: env!("POOL_SIZE", :integer),
-            adapter: env("ADAPTER", :module, Ecto.Adapters.Postgres),
-            pool: env!("POOL", :module?)    
-    end
+if config_env() == "test" do
+    config :myapp, MyApp.Repo,
+        database: "myapp_test",
+        username: "test-user",
+        password: "test-password",
+        hostname: "localhost",
+        pool_size: 10,
+        adapter: Ecto.Adapters.Postgres,
+        pool: Ecto.Adapters.SQL.Sandbox
+else
+    config :myapp, MyApp.Repo,
+        database: env!("DATABASE", :string!),
+        username: env!("USERNAME", :string),
+        password: env!("PASSWORD", :string),
+        hostname: env!("HOSTNAME", :string!),
+        pool_size: env!("POOL_SIZE", :integer),
+        adapter: env("ADAPTER", :module, Ecto.Adapters.Postgres),
+        pool: env!("POOL", :module?)
+end
+```
 
 ### `.env` (dev or prod)
 
-    DATABASE=myapp_dev
-    USERNAME=myuser
-    PASSWORD=mypassword
-    HOSTNAME=localhost
-    POOL_SIZE=10
-    POOL=
+```env
+DATABASE=myapp_dev
+USERNAME=myuser
+PASSWORD=mypassword
+HOSTNAME=localhost
+POOL_SIZE=10
+POOL=
+```
 
 The `.env` shows some values suitable local development; if the app were deployed on a production box, it would be the same shape, but its values would point to a production database. For tests, values are hard-coded inside `runtime.exs`. This is one admittedly heavy-handed way to ensure that your test runs don't accidentally hit the wrong database, but it does mean that there is a small block of untestable code inside the if-statement.
 
@@ -78,51 +84,59 @@ Consider the following setup:
 
 ### `config/config.exs`
 
-    # compile-time config
-    import Config
+```elixir
+# compile-time config
+import Config
 
-    config :myapp,
-    ecto_repos: [MyApp.Repo]
+config :myapp,
+ecto_repos: [MyApp.Repo]
 
-    config :myapp, MyApp.Repo,
-    migration_timestamps: [
-        type: :utc_datetime,
-        inserted_at: :created_at
-    ]
+config :myapp, MyApp.Repo,
+migration_timestamps: [
+    type: :utc_datetime,
+    inserted_at: :created_at
+]
+```
 
 ### `config/runtime.exs`
 
-    import Config
-    import Dotenvy
+```elixir
+import Config
+import Dotenvy
 
-    source([".env", ".env.\#{config_env()}", System.get_env()])
+source([".env", ".env.\#{config_env()}", System.get_env()])
 
-    config :myapp, MyApp.Repo,
-        database: env!("DATABASE", :string!),
-        username: env!("USERNAME", :string),
-        password: env!("PASSWORD", :string),
-        hostname: env!("HOSTNAME", :string!),
-        pool_size: env!("POOL_SIZE", :integer),
-        adapter: env("ADAPTER", :module, Ecto.Adapters.Postgres),
-        pool: env!("POOL", :module?)
+config :myapp, MyApp.Repo,
+    database: env!("DATABASE", :string!),
+    username: env!("USERNAME", :string),
+    password: env!("PASSWORD", :string),
+    hostname: env!("HOSTNAME", :string!),
+    pool_size: env!("POOL_SIZE", :integer),
+    adapter: env("ADAPTER", :module, Ecto.Adapters.Postgres),
+    pool: env!("POOL", :module?)
+```
 
 ### `.env` (dev or prod)
 
-    DATABASE=myapp_dev
-    USERNAME=myuser
-    PASSWORD=mypassword
-    HOSTNAME=localhost
-    POOL_SIZE=10
-    POOL=
+```env
+DATABASE=myapp_dev
+USERNAME=myuser
+PASSWORD=mypassword
+HOSTNAME=localhost
+POOL_SIZE=10
+POOL=
+```
 
 ### `.env.test`
 
-    DATABASE=myapp_test
-    USERNAME=myuser
-    PASSWORD=mypassword
-    HOSTNAME=localhost
-    POOL_SIZE=10
-    POOL=Ecto.Adapters.SQL.Sandbox
+```env
+DATABASE=myapp_test
+USERNAME=myuser
+PASSWORD=mypassword
+HOSTNAME=localhost
+POOL_SIZE=10
+POOL=Ecto.Adapters.SQL.Sandbox
+```
 
 The above setup would likely commit the `.env.test` file so it was sure to override, and add `.env` to `.gitignore`, but other strategies are possible.  The above example demonstrates developer settings appropriate for local development in the sample `.env` file, but a production deployment would only differ in its _values_: the shape of the file would be the same.
 
@@ -142,57 +156,57 @@ See `Dotenvy.Transformer` for more details.
 
 One of the hurdles when dealing with Elixir releases is that only certain files are packaged into them.  One solution to this is to specify additional directories to include in the release via the `overlays` option in your `mix.exs`, e.g. an `envs/` directory which contains your dotenv files:
 
-    ```elixir
-    # mix.exs
-    defp releases do
-        [
-        myapp: [
-            overlays: ["envs/"]
-        ]
-        ]
-    end
-    ```
+```elixir
+# mix.exs
+defp releases do
+    [
+    myapp: [
+        overlays: ["envs/"]
+    ]
+    ]
+end
+```
 
 Since these files are copied to the root of your release, the relative paths used in your `runtime.exs` will not be able to find them when your app is running in the context of a release. One solution to this is to rely on the `RELEASE_ROOT` system environment variable which is set when a release is run. If this value exists, it will represent the fully qualified path to your release; this variable will not be set when running your app locally (e.g. during development).
 
 We can use the presence of the `RELEASE_ROOT` to determine a directory prefix for where to look for our dotenv files, e.g.:
 
-    ```elixir
-    import Config
-    import Dotenvy
+```elixir
+import Config
+import Dotenvy
 
-    # For local development, read dotenv files inside the envs/ dir;
-    # for releases, read them at the RELEASE_ROOT
-    config_dir_prefix =
-    System.fetch_env("RELEASE_ROOT")
-    |> case do
-        :error ->
-        "envs/"
+# For local development, read dotenv files inside the envs/ dir;
+# for releases, read them at the RELEASE_ROOT
+config_dir_prefix =
+System.fetch_env("RELEASE_ROOT")
+|> case do
+    :error ->
+    "envs/"
 
-        {:ok, value} ->
-        IO.puts("Loading dotenv files from #{value}")
-        "#{value}/"
-    end
+    {:ok, value} ->
+    IO.puts("Loading dotenv files from #{value}")
+    "#{value}/"
+end
 
-    source!([
-    "#{config_dir_prefix}.env",
-    "#{config_dir_prefix}.#{config_env()}.env",
-    "#{config_dir_prefix}.#{config_env()}.local.env"
-    System.get_env()
-    ])
-    ```
+source!([
+"#{config_dir_prefix}.env",
+"#{config_dir_prefix}.#{config_env()}.env",
+"#{config_dir_prefix}.#{config_env()}.local.env"
+System.get_env()
+])
+```
 
 Or more succinctly:
 
-    ```elixir
-    config_dir_prefix = System.get_env("RELEASE_ROOT") || "envs/"
-    ```
+```elixir
+config_dir_prefix = System.get_env("RELEASE_ROOT") || "envs/"
+```
 
 It can be safer to reference an absolute path, e.g.
 
-    ```elixir
-    config_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
-    ```
+```elixir
+config_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
+```
 
 This is especially important when working with umbrella apps (see below).
 
@@ -202,12 +216,12 @@ Elixir [Umbrella Projects](https://elixir-lang.org/getting-started/mix-otp/depen
 
 In particular, you have to be very careful about relative paths when working in an umbrella project.  Depending on what you're doing, the path may be _relative to a single application_ instead of relative to the root of the repository. Using `Path.expand/1` is a good way to anchor your `config/runtime.exs` to point to the root of the repository instead of it resolving to the root of a specific application within the umbrella. E.g.
 
-    ```elixir
-    env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
+```elixir
+env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
 
-    source!([
-        "#{env_dir_prefix}#{config_env()}.env",
-        "#{env_dir_prefix}#{config_env()}.local.env",
-        System.get_env()
-    ])
-    ```
+source!([
+    "#{env_dir_prefix}#{config_env()}.env",
+    "#{env_dir_prefix}#{config_env()}.local.env",
+    System.get_env()
+])
+```
