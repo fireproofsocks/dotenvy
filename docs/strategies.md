@@ -74,7 +74,7 @@ POOL=
 
 The `.env` shows some values suitable local development; if the app were deployed on a production box, it would be the same shape, but its values would point to a production database. For tests, values are hard-coded inside `runtime.exs`. This is one admittedly heavy-handed way to ensure that your test runs don't accidentally hit the wrong database, but it does mean that there is a small block of untestable code inside the if-statement.
 
-You may notice that in this example we have done away with `config/dev.exs`, `config/test.exs`, and `config/prod.exs`. These should be used _only_ when your app has a legitimate compile-time need.  If you _can_ configure something at runtime, you _should_ configure it at runtime.  These extra config files are omitted to help demonstrate how the decisions about how the app should run can often be pushed into `runtime.exs`. This should help avoid confusion that often arises between compile-time and runtime configuration.
+You may notice that in this example we have done away with `config/dev.exs`, `config/test.exs`, and `config/prod.exs`. These should be used _only_ when your app has a legitimate compile-time need. If you _can_ configure something at runtime, you _should_ configure it at runtime. These extra config files are omitted to help demonstrate how the decisions about how the app should run can often be pushed into `runtime.exs`. This should help avoid confusion that often arises between compile-time and runtime configuration.
 
 ## Dotenvs for All Environments
 
@@ -138,7 +138,7 @@ POOL_SIZE=10
 POOL=Ecto.Adapters.SQL.Sandbox
 ```
 
-The above setup would likely commit the `.env.test` file so it was sure to override, and add `.env` to `.gitignore`, but other strategies are possible.  The above example demonstrates developer settings appropriate for local development in the sample `.env` file, but a production deployment would only differ in its _values_: the shape of the file would be the same.
+The above setup would likely commit the `.env.test` file so it was sure to override, and add `.env` to `.gitignore`, but other strategies are possible. The above example demonstrates developer settings appropriate for local development in the sample `.env` file, but a production deployment would only differ in its _values_: the shape of the file would be the same.
 
 The `.env.test` file is loaded when running tests, so its values override any of the
 values set in the `.env`.
@@ -154,7 +154,7 @@ See `Dotenvy.Transformer` for more details.
 
 ## Releases
 
-One of the hurdles when dealing with Elixir releases is that only certain files are packaged into them.  One solution to this is to specify additional directories to include in the release via the `overlays` option in your `mix.exs`, e.g. an `envs/` directory which contains your dotenv files:
+One of the hurdles when dealing with Elixir releases is that only certain files are packaged into them. One solution to this is to specify additional directories to include in the release via the `overlays` option in your `mix.exs`, e.g. an `envs/` directory which contains your dotenv files:
 
 ```elixir
 # mix.exs
@@ -212,7 +212,7 @@ This is especially important when working with umbrella apps (see below).
 
 Elixir [Umbrella Projects](https://elixir-lang.org/getting-started/mix-otp/dependencies-and-umbrella-projects.html) consume configuration slightly differently due to how they are organized.
 
-In particular, you have to be very careful about relative paths when working in an umbrella project.  Depending on what you're doing, the path may be _relative to a single application_ instead of relative to the root of the repository. Using `Path.expand/1` is a good way to anchor your `config/runtime.exs` to point to the root of the repository instead of it resolving to the root of a specific application within the umbrella. E.g.
+In particular, you have to be very careful about relative paths when working in an umbrella project. Depending on what you're doing, the path may be _relative to a single application_ instead of relative to the root of the repository. Using `Path.expand/1` is a good way to anchor your `config/runtime.exs` to point to the root of the repository instead of it resolving to the root of a specific application within the umbrella. E.g.
 
 ```elixir
 env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
