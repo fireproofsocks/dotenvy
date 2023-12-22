@@ -191,7 +191,7 @@ end
 source!([
   "#{config_dir_prefix}.env",
   "#{config_dir_prefix}.#{config_env()}.env",
-  "#{config_dir_prefix}.#{config_env()}.local.env"
+  "#{config_dir_prefix}.#{config_env()}.local.env",
   System.get_env()
 ])
 ```
