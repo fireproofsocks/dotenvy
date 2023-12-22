@@ -177,15 +177,13 @@ import Dotenvy
 
 # For local development, read dotenv files inside the envs/ dir;
 # for releases, read them at the RELEASE_ROOT
-config_dir_prefix =
-  System.fetch_env("RELEASE_ROOT")
-  |> case do
-    :error ->
-      "envs/"
+config_dir_prefix = case System.fetch_env("RELEASE_ROOT") do
+  :error ->
+    "envs/"
 
-    {:ok, value} ->
-      IO.puts("Loading dotenv files from #{value}")
-      "#{value}/"
+  {:ok, value} ->
+    IO.puts("Loading dotenv files from #{value}")
+    "#{value}/"
 end
 
 source!([
