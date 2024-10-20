@@ -85,7 +85,8 @@ defmodule Dotenvy do
   See its documentation for a list of supported types.
 
   This function attempts to read a value from a local data store of sourced values;
-  it will fall back to `System.fetch_env/1` when no locally stored variable is available.
+  it will fall back to `System.fetch_env/1` when no locally stored variable is available. This
+  behaviour can be overridden by specifying a "no fall back" type (e.g. `:string_no_fall_back`).
 
   ## Examples
 
@@ -106,7 +107,10 @@ defmodule Dotenvy do
           default :: any()
         ) :: any() | no_return()
   def env!(variable, type, default) do
-    case fetch_var(variable) do
+    fall_back_to_system_env? = fall_back_to_system_env?(type)
+    type = maybe_remove_fall_back_type_modifier(type)
+
+    case fetch_var(variable, fall_back_to_system_env?) do
       :error -> default
       {:ok, value} -> to!(value, type)
     end
@@ -134,7 +138,8 @@ defmodule Dotenvy do
   Reads the given env `variable` and converts its value to the given `type`.
 
   This function attempts to read a value from a local data store of sourced values;
-  it will fall back to `System.fetch_env/1` when no locally stored variable is available.
+  it will fall back to `System.fetch_env/1` when no locally stored variable is available. This
+  behaviour can be overridden by specifying a "no fall back" type (e.g. `:string_no_fall_back`).
 
   This function may raise an error because type conversion is delegated to
   `Dotenvy.Transformer.to!/2` -- see its documentation for a list of supported types.
@@ -151,7 +156,10 @@ defmodule Dotenvy do
   def env!(variable, type \\ :string)
 
   def env!(variable, type) do
-    case fetch_var(variable) do
+    fall_back_to_system_env? = fall_back_to_system_env?(type)
+    type = maybe_remove_fall_back_type_modifier(type)
+
+    case fetch_var(variable, fall_back_to_system_env?) do
       :error -> raise "Application environment variable #{variable} not set"
       {:ok, value} -> to!(value, type)
     end
@@ -301,13 +309,25 @@ defmodule Dotenvy do
     end
   end
 
-  defp fetch_var(variable) do
+  defp fall_back_to_system_env?(type) when is_atom(type) do
+    !String.contains?("#{type}", "_no_fall_back")
+  end
+
+  defp fall_back_to_system_env?(_type), do: true
+
+  defp maybe_remove_fall_back_type_modifier(type) when is_atom(type) do
+    String.replace("#{type}", "_no_fall_back", "") |> String.to_atom()
+  end
+
+  defp maybe_remove_fall_back_type_modifier(type), do: type
+
+  defp fetch_var(variable, fall_back_to_system_env?) do
     :dotenvy_vars
     |> Process.get(%{})
     |> Map.fetch(variable)
     |> case do
       {:ok, value} -> {:ok, value}
-      :error -> System.fetch_env(variable)
+      :error -> if fall_back_to_system_env?, do: System.fetch_env(variable), else: :error
     end
   end
 

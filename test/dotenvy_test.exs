@@ -16,6 +16,14 @@ defmodule DotenvyTest do
       assert "#{test}" == env!("TEST_VALUE", :string, nil)
     end
 
+    test "does not return env value when 'no fall back' type modifier set", %{test: test} do
+      System.put_env("TEST_VALUE", "#{test}")
+
+      assert_raise RuntimeError, fn ->
+        env!("TEST_VALUE", :string_no_fall_back!)
+      end
+    end
+
     test "built-in conversion errors convert to RuntimeError", %{test: test} do
       System.put_env("TEST_VALUE", "#{test}")
 

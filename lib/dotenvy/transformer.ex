@@ -46,6 +46,14 @@ defmodule Dotenvy.Transformer do
   - `:string!` - as above, but an empty string will raise.
   - custom function - see below.
 
+  ## Prevent Fallback to System Environment
+
+  If a variable is not found when calling `Dotenvy.env!/2` or `Dotenvy.env!/3`, the code will
+  check if there is a system environment variable with a matching name, and return (i.e. fall back
+  to) this value if it exists. This behaviour can be overridden by adding a "`_no_fall_back`"
+  modifier to the specified type (e.g. `:string_no_fall_back!`) when calling `Dotenvy.env!/2` or
+  `Dotenvy.env!/3`. Any atom type can use this modifier.
+
   ## Custom Callback function
 
   When you require more control over the transformation of your value than is possible
