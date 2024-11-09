@@ -84,8 +84,7 @@ defmodule Dotenvy do
   Conversion is delegated to `Dotenvy.Transformer.to!/2`, which may raise an error.
   See its documentation for a list of supported types.
 
-  This function attempts to read a value from a local data store of sourced values;
-  it will fall back to `System.fetch_env/1` when no locally stored variable is available.
+  This function attempts to read a value from a local data store of sourced values.
 
   ## Examples
 
@@ -133,8 +132,7 @@ defmodule Dotenvy do
   @doc """
   Reads the given env `variable` and converts its value to the given `type`.
 
-  This function attempts to read a value from a local data store of sourced values;
-  it will fall back to `System.fetch_env/1` when no locally stored variable is available.
+  This function attempts to read a value from a local data store of sourced values.
 
   This function may raise an error because type conversion is delegated to
   `Dotenvy.Transformer.to!/2` -- see its documentation for a list of supported types.
@@ -152,7 +150,7 @@ defmodule Dotenvy do
 
   def env!(variable, type) do
     case fetch_var(variable) do
-      :error -> raise "Application environment variable #{variable} not set"
+      :error -> raise "Dotenv variable #{variable} not set"
       {:ok, value} -> to!(value, type)
     end
   rescue
@@ -305,10 +303,6 @@ defmodule Dotenvy do
     :dotenvy_vars
     |> Process.get(%{})
     |> Map.fetch(variable)
-    |> case do
-      {:ok, value} -> {:ok, value}
-      :error -> System.fetch_env(variable)
-    end
   end
 
   defp put_all_vars(vars), do: Process.put(:dotenvy_vars, vars)
