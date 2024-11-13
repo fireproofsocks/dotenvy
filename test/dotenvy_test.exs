@@ -13,6 +13,12 @@ defmodule DotenvyTest do
 
     test "returns value when env set and sourced", %{test: test} do
       System.put_env("TEST_VALUE", "#{test}")
+      source([System.get_env()])
+      assert "#{test}" == env!("TEST_VALUE", :string, nil)
+    end
+
+    test "raises error when evn set but not sourced", %{test: test} do
+      System.put_env("TEST_VALUE", "#{test}")
 
       assert_raise RuntimeError, fn ->
         env!("TEST_VALUE", :string)

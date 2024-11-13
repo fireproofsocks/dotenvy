@@ -73,11 +73,11 @@ defmodule Dotenvy.TransformerTest do
 
   describe "to!/2 :charlist" do
     test "convert" do
-      assert 'foo' == T.to!("foo", :charlist)
+      assert ~c"foo" == T.to!("foo", :charlist)
     end
 
     test "empty to empty" do
-      assert '' == T.to!("", :charlist)
+      assert ~c"" == T.to!("", :charlist)
     end
   end
 
@@ -87,7 +87,7 @@ defmodule Dotenvy.TransformerTest do
     end
 
     test "convert" do
-      assert 'foo' == T.to!("foo", :charlist?)
+      assert ~c"foo" == T.to!("foo", :charlist?)
     end
   end
 
@@ -99,7 +99,7 @@ defmodule Dotenvy.TransformerTest do
     end
 
     test "convert" do
-      assert 'foo' == T.to!("foo", :charlist!)
+      assert ~c"foo" == T.to!("foo", :charlist!)
     end
   end
 
