@@ -15,7 +15,7 @@ Add `dotenvy` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:dotenvy, "~> 0.8.0"}
+    {:dotenvy, "~> 0.9.0"}
   ]
 end
 ```
