@@ -5,7 +5,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v0.9.0
 
-- Removes fallback to `System.fetch_env/2` and instead requires explicit sourcing of system envs. See [Issue 21](https://github.com/fireproofsocks/dotenvy/issues/21)
+- Removes fallback to `System.fetch_env/1` and instead requires explicit sourcing of system envs. See [Issue 21](https://github.com/fireproofsocks/dotenvy/issues/21)
 - Bumps Elixir version specified for local development in `.tool-versions`
 - Updates dependencies to latest
 

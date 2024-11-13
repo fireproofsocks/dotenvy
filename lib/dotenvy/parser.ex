@@ -33,6 +33,7 @@ defmodule Dotenvy.Parser do
     end
   end
 
+  # Entering a comment
   defp find_key(<<?#, tail::binary>>, _acc, vars) do
     tail
     |> fast_forward_to_line_end()
@@ -234,6 +235,7 @@ defmodule Dotenvy.Parser do
   end
 
   # Escape sequences
+  # credo:disable-for-lines:19
   defp find_value(
          <<?\\, char::utf8, tail::binary>>,
          acc,
