@@ -1,8 +1,14 @@
 # To install these versions use
+
 # asdf install
+
 #
+
 # Note: you may need to clear out your deps/ and _build/ directories and
+
 # re-run `mix deps.get` to force retrieval and compilation of appropriate packages
+
 # for your versions
-erlang 25.3.2
-elixir 1.14.4-otp-25
+
+erlang 26.2.5.2
+elixir 1.17.2-otp-26
