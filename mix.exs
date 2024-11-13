@@ -92,7 +92,7 @@ defmodule Dotenvy.MixProject do
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
       {:excoveralls, "~> 0.18", only: [:dev, :test], runtime: false},
-      {:mox, "~> 1.2", only: [:test], runtime: false}
+      {:mox, "~> 1.2", only: [:test]}
     ]
   end
 end
