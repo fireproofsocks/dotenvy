@@ -11,13 +11,20 @@ defmodule DotenvyTest do
       assert "some-default" = env!("DOES_NOT_EXIST", :string, "some-default")
     end
 
-    test "returns value when env set", %{test: test} do
+    test "returns value when env set and sourced", %{test: test} do
       System.put_env("TEST_VALUE", "#{test}")
+
+      assert_raise RuntimeError, fn ->
+        env!("TEST_VALUE", :string)
+      end
+
+      source([System.get_env()])
       assert "#{test}" == env!("TEST_VALUE", :string, nil)
     end
 
     test "built-in conversion errors convert to RuntimeError", %{test: test} do
       System.put_env("TEST_VALUE", "#{test}")
+      source([System.get_env()])
 
       assert_raise RuntimeError, fn ->
         env!("TEST_VALUE", :integer, 123)
@@ -26,6 +33,7 @@ defmodule DotenvyTest do
 
     test "raising Dotenvy.Error with custom message converts to RuntimeError", %{test: test} do
       System.put_env("TEST_VALUE", "#{test}")
+      source([System.get_env()])
 
       assert_raise RuntimeError, ~r/Custom error/, fn ->
         env!(
@@ -40,6 +48,7 @@ defmodule DotenvyTest do
 
     test "raising other error types passes thru", %{test: test} do
       System.put_env("TEST_VALUE", "#{test}")
+      source([System.get_env()])
 
       assert_raise FunctionClauseError, fn ->
         env!("TEST_VALUE", fn _ -> Keyword.get(%{}, :foo) end, "default")
@@ -50,6 +59,7 @@ defmodule DotenvyTest do
   describe "env!/2" do
     test "default type is string", %{test: test} do
       System.put_env("TEST_VALUE", "#{test}")
+      source([System.get_env()])
       assert "#{test}" == env!("TEST_VALUE")
     end
 
@@ -61,6 +71,7 @@ defmodule DotenvyTest do
 
     test "built-in conversion errors convert to RuntimeError", %{test: test} do
       System.put_env("TEST_VALUE", "#{test}")
+      source([System.get_env()])
 
       assert_raise RuntimeError, fn ->
         env!("TEST_VALUE", :integer)
@@ -69,6 +80,7 @@ defmodule DotenvyTest do
 
     test "raising Dotenvy.Error with custom message converts to RuntimeError", %{test: test} do
       System.put_env("TEST_VALUE", "#{test}")
+      source([System.get_env()])
 
       assert_raise RuntimeError, ~r/Custom error/, fn ->
         env!("TEST_VALUE", fn _ ->
@@ -79,6 +91,7 @@ defmodule DotenvyTest do
 
     test "raising other error types passes thru", %{test: test} do
       System.put_env("TEST_VALUE", "#{test}")
+      source([System.get_env()])
 
       assert_raise FunctionClauseError, fn ->
         env!("TEST_VALUE", fn _ -> Keyword.get(%{}, :foo) end)
