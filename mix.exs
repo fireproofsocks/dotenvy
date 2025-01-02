@@ -33,6 +33,9 @@ defmodule Dotenvy.MixProject do
       "README.md",
       "cheatsheet.cheatmd",
       "docs/strategies.md",
+      "docs/phoenix.md",
+      "docs/livebooks.md",
+      "docs/flyio.md",
       "docs/dotenv-file-format.md",
       "CHANGELOG.md"
     ]
