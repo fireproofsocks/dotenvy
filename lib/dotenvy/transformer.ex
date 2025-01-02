@@ -88,8 +88,8 @@ defmodule Dotenvy.Transformer do
 
   Remember:
 
-  - Use a `?` suffix when an empty string should be considered `nil` (a.k.a. a "nullable" value).
-  - Use a `!` suffix when an empty string is not allowed. Use this when values are required.
+  - The type should use a `?` suffix when an empty string should be considered `nil` (a.k.a. a "nullable" value).
+  - The type should a `!` suffix when an empty string is not allowed. Use this when values are required.
 
   ## Types
 
