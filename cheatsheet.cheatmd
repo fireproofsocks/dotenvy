@@ -65,9 +65,7 @@ environment variables will take precedence over anything parsed from the `.env` 
 import Config
 import Dotenvy
 
-dir = System.get_env("RELEASE_ROOT") || "envs/"
-# In an umbrella app:
-# dir = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
+dir = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
   
 source!([
   "#{dir}#{config_env()}.env",
