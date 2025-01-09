@@ -23,7 +23,8 @@ defmodule Dotenvy.MixProject do
         source_ref: "v#{@version}",
         source_url: @source_url,
         logo: "assets/logo.png",
-        extras: extras()
+        extras: extras(),
+        skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
       ]
     ]
   end
@@ -32,11 +33,14 @@ defmodule Dotenvy.MixProject do
     [
       "README.md",
       "cheatsheet.cheatmd",
-      "docs/strategies.md",
+      "docs/getting_started.md",
       "docs/phoenix.md",
       "docs/livebooks.md",
       "docs/flyio.md",
       "docs/dotenv-file-format.md",
+      "docs/1password.md",
+      "docs/configuration_providers.md",
+      "docs/releases.md",
       "CHANGELOG.md"
     ]
   end
