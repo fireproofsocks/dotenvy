@@ -15,7 +15,7 @@ Add `dotenvy` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:dotenvy, "~> 0.9.0"}
+    {:dotenvy, "~> 1.0.0"}
   ]
 end
 ```
@@ -38,7 +38,7 @@ By default, the listed files do not _need_ to exist -- the function only needs t
 
 You control if and how existing system env vars are handled: usually they should take precedence over values defined in `.env` files, so the `System.get_env()` should be included as the final input supplied to `source/2`.
 
-Unlike other packages, `Dotenvy` has no opinions about the names or locations of your dotenv config files, you just need to pass their paths to `Dotenvy.source/2` or `Dotenvy.source!/2`.
+Unlike other packages, `Dotenvy` has no opinions about the names or locations of your `.env` files, you just need to pass their paths to `Dotenvy.source/2` or `Dotenvy.source!/2`.
 
 For a simple example, we can load a single file:
 
@@ -47,7 +47,9 @@ For a simple example, we can load a single file:
 import Config
 import Dotenvy
 
-source!([".env", System.get_env()])
+env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
+
+source!(["#{env_dir_prefix}.env", System.get_env()])
 
 config :myapp, MyApp.Repo,
     database: env!("DATABASE", :string!),
@@ -73,7 +75,7 @@ POOL=
 
 When you set up your application configuration in this way, you are creating a contract with the environment: `Dotenvy.env!/2` will raise if the required variables have not been set or if the values cannot be properly transformed. This is an approach that works equally well for your day-to-day development and for mix releases.
 
-Read the [configuration strategies](docs/strategies.md) for more detailed examples of how to configure your app.
+Read the [Getting Started](docs/getting_started.md) for more detailed examples of how to configure your app.
 
 Refer to the ["dotenv" (`.env`) file format](docs/dotenv-file-format.md) for more examples and features of the supported syntax.
 
@@ -111,7 +113,7 @@ defp aliases do
 
 ## Upgrading from v0.5.0 or before
 
-Starting with Dotenvy v0.6.0, the precedence of system env variables over parsed `.env` files is not defined; the `:overwrite?` and `:vars` options are no longer supported in `Dotenvy.source/2` and `Dotenvy.source!/2`. Instead, the `source` functions now accept file paths OR maps: this makes the question of variable precedence something that must be explicitly listed. The `source` functions act more like `Map.merge/2`, accumulating values, always giving precedence to the righthand source.
+Starting with `Dotenvy` v0.6.0, the precedence of system env variables over parsed `.env` files is not defined; the `:overwrite?` and `:vars` options are no longer supported in `Dotenvy.source/2` and `Dotenvy.source!/2`. Instead, the `source` functions now accept file paths OR maps: this makes the question of variable precedence something that must be explicitly listed. The `source` functions act more like `Map.merge/2`, accumulating values, always giving precedence to the righthand source.
 
 Most users upgrading from v0.5.0 will wish to include `System.get_env()` as the final input to `source/2`.
 

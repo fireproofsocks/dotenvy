@@ -32,7 +32,6 @@ defmodule Dotenvy.FileCase do
   Loads up a supporting file from the relative path inside `test/support/files/`
   """
   def get_file_contents(filename) do
-    "test/support/files/#{filename}"
-    |> File.read!()
+    File.read!("test/support/files/#{filename}")
   end
 end

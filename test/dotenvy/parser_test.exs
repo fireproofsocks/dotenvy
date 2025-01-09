@@ -192,4 +192,19 @@ defmodule Dotenvy.ParserTest do
       assert {:error, _} = P.parse("NOT-ALLOWED=")
     end
   end
+
+  describe "parse/3 shell commands" do
+    test ":ok" do
+      assert {:ok, %{"FOO" => "this-is-a-test"}} = P.parse("FOO=$(echo this-is-a-test)")
+    end
+
+    test "commands not executed in single-quoted lines" do
+      assert {:ok, %{"FOO" => "$(echo this-is-a-test)"}} =
+               P.parse("FOO='$(echo this-is-a-test)'")
+    end
+
+    test ":error on empty command" do
+      assert {:error, _} = P.parse("FOO=$()")
+    end
+  end
 end

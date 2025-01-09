@@ -10,7 +10,7 @@ defmodule Dotenvy do
   of your files: `.env` is a common choice, you may name your configuration files whatever
   you wish.
 
-  See the [strategies](docs/strategies.md) for examples of various use cases.
+  See the [Getting Started](docs/getting_started.md) page for more info.
   """
 
   import Dotenvy.Transformer
@@ -34,8 +34,7 @@ defmodule Dotenvy do
   a map of `vars` (with string keys, as would come from `System.get_env/0`),
   and a keyword list of `opts`.
 
-  This callback is provided to help facilitate testing. See `Dotenvy.Parser`
-  for the default implementation.
+  See `Dotenvy.Parser` for the default implementation of this callback.
   """
   @callback parse(contents :: binary(), vars :: map(), opts :: keyword()) ::
               {:ok, map()} | {:error, any()}
@@ -73,13 +72,15 @@ defmodule Dotenvy do
 
   > #### Use `env!/2` when possible {: .info}
   >
-  > Use of `env!/2` is recommended over `env!/3` because it creates a stronger contract with
+  > `env!/2` is recommended over `env!/3` because it creates a stronger contract with
   > the environment: your app literally will not start when required env variables are missing.
 
-  If the given `variable` is *set*, its value is converted to
-  the given `type`. The provided `default` value is _only_ used when the
-  variable is _not_ set; **the `default` value is returned as-is, without conversion**.
-  This allows greater control of the output.
+  If the given `variable` is *set*, its value is converted to the given `type`.
+  The provided `default` value is _only_ used when the variable is _not_ set
+  (i.e. when it does not exist).
+
+  **The `default` value is returned as-is, without conversion**. This allows
+  greater control of the output.
 
   Conversion is delegated to `Dotenvy.Transformer.to!/2`, which may raise an error.
   See its documentation for a list of supported types.
@@ -122,12 +123,6 @@ defmodule Dotenvy do
     error ->
       reraise error, __STACKTRACE__
   end
-
-  @deprecated "Use `Dotenvy.env!/3` instead"
-  @spec env(variable :: binary(), type :: atom(), default :: any()) :: any() | no_return()
-  def env(variable, type \\ :string, default \\ nil)
-
-  def env(variable, type, default), do: env!(variable, type, default)
 
   @doc """
   Reads the given env `variable` and converts its value to the given `type`.
@@ -189,7 +184,7 @@ defmodule Dotenvy do
     specifying which files are required. If a file listed here is not included
     in the function's `files` argument, it is ignored. Default: `false`
 
-  - `:side_effect` an arity 1 function called after the successful parsing inputs.
+  - `:side_effect` an arity 1 function called after successfully parsing inputs.
     The default is an internal function that stores the values inside a process dictionary so
     the values are available to the `env!/2` and `env!/3` functions. This option
     is overridable to facilitate testing. Changing it is not recommended.
@@ -346,7 +341,7 @@ defmodule Dotenvy do
   end
 
   # Reads the file after checking whether or not it exists
-  @spec read_file(file :: binary(), true | false | [binary()]) ::
+  @spec read_file(file :: binary(), require_files :: true | false | [binary()]) ::
           {:ok, binary()} | {:error, any()} | :continue
   defp read_file(file, false) do
     case File.exists?(file) do

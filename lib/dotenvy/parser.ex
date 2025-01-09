@@ -69,11 +69,9 @@ defmodule Dotenvy.Parser do
     find_key(tail, acc <> <<char>>, vars)
   end
 
-  #######################################
-  # Find the value for the given key
-  # STRAVO : STRing, Accumulator, Vars, Opts
-  #######################################
-  # is the rest of the line free from debris?
+  # Find a value that corresponds with the key...
+  # ''' heredoc opening
+  @spec find_value(str :: binary(), acc :: binary(), vars :: map(), opts :: %Opts{}) :: any()
   defp find_value(
          <<?', ?', ?', tail::binary>>,
          acc,
@@ -102,6 +100,7 @@ defmodule Dotenvy.Parser do
     end
   end
 
+  # """ heredoc opening
   defp find_value(
          <<?", ?", ?", tail::binary>>,
          acc,
@@ -130,6 +129,7 @@ defmodule Dotenvy.Parser do
     end
   end
 
+  # heredoc closing (single- or double-quotes)
   defp find_value(
          <<h::binary-size(3), tail::binary>>,
          acc,
@@ -145,6 +145,7 @@ defmodule Dotenvy.Parser do
     end
   end
 
+  # double-quote quote opening
   defp find_value(
          <<?", tail::binary>>,
          acc,
@@ -160,6 +161,7 @@ defmodule Dotenvy.Parser do
     end
   end
 
+  # single-quote opening
   defp find_value(
          <<?', tail::binary>>,
          acc,
@@ -199,22 +201,24 @@ defmodule Dotenvy.Parser do
     find_key(tail, "", Map.put(vars, key, String.trim(acc)))
   end
 
-  # Variable interpolation
+  # Start of variable interpolation e.g. ${FOO}
   defp find_value(<<?$, ?{, tail::binary>>, acc, vars, %Opts{interpolate?: true} = opts) do
-    case acc_varname(tail, "", <<?}>>) do
-      {:ok, acc_varname, tail} ->
-        varname = String.trim(acc_varname)
-
-        case Map.fetch(vars, varname) do
-          :error -> {:error, "Could not interpolate variable ${#{varname}}: variable undefined."}
-          {:ok, val} -> find_value(tail, acc <> val, vars, opts)
-        end
-
-      {:error, error} ->
-        {:error, error}
+    with {:ok, var_name, tail} <- acc_inner_value(tail, "", <<?}>>),
+         {:ok, interpolated_val} <- map_fetch(vars, var_name) do
+      find_value(tail, acc <> interpolated_val, vars, opts)
     end
   end
 
+  # Start of shell command e.g. $(whoami)
+  defp find_value(<<?$, ?(, tail::binary>>, acc, vars, %Opts{interpolate?: true} = opts) do
+    with {:ok, inner_value, tail} <- acc_inner_value(tail, "", <<?)>>),
+         {:ok, cmd, args} <- parse_cmd_args(inner_value),
+         {:ok, returned_value} <- execute_shell_cmd(cmd, args) do
+      find_value(tail, acc <> returned_value, vars, opts)
+    end
+  end
+
+  # closing character
   defp find_value(
          <<h::binary-size(1), tail::binary>>,
          acc,
@@ -263,20 +267,43 @@ defmodule Dotenvy.Parser do
      "Could not parse value for #{inspect(key)}. Stop sequence not found: #{inspect(stop)}"}
   end
 
+  # accumulate the char as part of the value and keep going...
   defp find_value(<<char::utf8, tail::binary>>, acc, vars, opts) do
     find_value(tail, acc <> <<char>>, vars, opts)
   end
 
-  # More limited helper function... for getting varnames? and?
-  defp acc_varname(<<h::binary-size(1), tail::binary>>, acc, stop) when h == stop do
-    {:ok, acc, tail}
+  # Parses text into a command and args
+  defp parse_cmd_args(str) do
+    case String.split(str, " ") do
+      [""] -> {:error, "Shell command missing arguments; $() cannot be empty."}
+      [cmd | args] -> {:ok, cmd, args}
+    end
   end
 
-  defp acc_varname(<<char::utf8, tail::binary>>, acc, stop) do
-    acc_varname(tail, acc <> <<char>>, stop)
+  defp execute_shell_cmd(cmd, args) do
+    case System.cmd(cmd, args) do
+      {raw_output, 0} ->
+        {:ok, String.trim(raw_output)}
+
+      {_, exit_status} ->
+        {:error,
+         "Command #{inspect(cmd)} with args #{inspect(args)} returned non-zero exit status: #{exit_status}"}
+    end
   end
 
-  defp acc_varname("", _acc, stop) do
+  # Accumulates a value up to the given `stop` character, e.g. a variable name
+  # for variable interpolation e.g. `FOO` in "${FOO}" or `whoami` in "$(whoami)"
+  defp acc_inner_value(<<h::binary-size(1), tail::binary>>, acc, stop) when h == stop do
+    # done!
+    {:ok, String.trim(acc), tail}
+  end
+
+  defp acc_inner_value(<<char::utf8, tail::binary>>, acc, stop) do
+    # accumulate the char and keep going...
+    acc_inner_value(tail, acc <> <<char>>, stop)
+  end
+
+  defp acc_inner_value("", _acc, stop) do
     {:error, "Stop sequence not found: #{inspect(stop)}"}
   end
 
@@ -311,5 +338,12 @@ defmodule Dotenvy.Parser do
 
   defp fast_forward_to_line_end(<<_::binary-size(1), tail::binary>>) do
     fast_forward_to_line_end(tail)
+  end
+
+  # provides consistent :ok/:error tuple output
+  defp map_fetch(vars, varname) do
+    with :error <- Map.fetch(vars, varname) do
+      {:error, "Could not interpolate variable ${#{varname}}: variable undefined."}
+    end
   end
 end
