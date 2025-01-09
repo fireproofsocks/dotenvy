@@ -2,14 +2,6 @@
 
 Although there are other places where `Dotenvy` may prove useful, it was designed with the `config/runtime.exs` in mind: most of the following use-cases will focus on that because it offers a clean and declarative way to load up the necessary variables.
 
-## A Note on Configuration Providers
-
-[Configuration providers](https://hexdocs.pm/elixir/Config.Provider.html) are most often invoked in the context of releases, and although they can solve certain problems that arise in production deployments, they tend to be an awkward fit for regular day-to-day development. `Dotenvy` seeks to normalize how configuration is loaded across environments, so having different methods depending on how you run your app is antithetical. We do not want some code that runs only in certain environments and not in others: it can make for untested or untestable code.
-
-Secondly, configuration providers sometimes shift the task of "shaping" the configuration out of Elixir and into some static representation (e.g. JSON or TOML). The allure of a straight-forward static file is deceiving because there is no easy way to delineate Elixir-specific subtleties such as distinguishing between keyword lists and maps. When configuration providers "solve" one problem, they often create another: it can require some busywork to convert values back into Elixir variable types that your application requires.
-
-For these reasons, `Dotenvy` does not rely on [configuration providers](https://hexdocs.pm/elixir/Config.Provider.html); dotenv files are an easier "lingua franca".
-
 ## Dotenv for Dev and Prod
 
 The distinctions between "dev" and "prod" become less clear when we focus on configuration: ideally, the app is the same in all environments, it is only the configuration _values_ themselves that can be described as "dev" or "prod" -- in this example they will live inside a single `.env` file.

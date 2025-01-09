@@ -1,47 +1,39 @@
 # Phoenix
 
-When your generate a Phoenix app using `mix phx.new`, it generates its own config files and unfortunately it makes a lot of assumptions about how you want to configure your application.
+This page shows you how to either generate a new Phoenix application using a custom Dotenvy-friendly generator OR how to modify the config files of an existing Phoenix app.
 
-It can take a while to retrofit those config files to use `Dotenvy`.
+## Installing the Dotenvy Generators
 
-To help save some time, this page shows you how to either generate a new Phoenix application using a custom Dotenvy-friendly generator OR how to modify the config files of an existing Phoenix app.
+The easiest way to get a Phoenix app up and running using `Dotenvy` is to use the generators available via the [`dotenvy_generators`](https://hex.pm/packages/dotenvy_generators) package.  These _replace_ the generators that ship with Phoenix, so it is important that you first uninstall the `phx_new` generators (if installed):
+
+    mix archive.uninstall phx_new
+    mix archive.install hex dotenvy_generators
+
+Once complete, running `mix help` should show a new task (`dot.new`) and the descriptions for the `phx.new` task should now reference `Dotenvy`.
 
 ## Creating a new Phoenix application that uses Dotenvy
 
-_The Mix task outlined here is still in development, so the instructions for its use may change in the future._
-
-1. Clone the fork of Phoenix at <https://github.com/fireproofsocks/phoenix>
-2. `cd` into the `installer/` directory
-3. Run `mix do archive.build, archive.install` from the `installer/` directory. This will replace the existing `phx_new` entry (if it exists).
-
-Once complete, running `mix help` from the `installer/` directory should show a new task: `phx.new.dotenvy`.
-
 In a new terminal window, you can run the new task to generate a new Phoenix app, e.g. `mix phx.new.dotenvy hello`.  This should generate a functional Phoenix application that leverages `Dotenvy` for its configuration.
 
-> ### The phx.new.dotenvy generator is still in development {: .warning}
->
-> This generator has not been thoroughly tested, so you may find that it misses a few things
-> here and there, but it should still save time in getting new projects up and
-> running using `Dotenvy`.
-
-See <https://victorbjorklund.com/guide-to-custom-phoenix-phx-new-generator-mix-task> for a guide on making your own custom generators.
+Have a look over the file structure: notice the `envs/` directory.  The files there house the values read at _runtime_, whereas the various config files inside of `config/` have been cleaned up so they focus on providing settings that must be defined at compile-time.
 
 ## Manually Editing Files
 
 If you already have a Phoenix application and you want to retrofit it to use `Dotenvy`, then you can reference the files below as a guideline for editing your configuration files.
 
-You will notice that most of the configuration has been moved into the `runtime.exs` leaving only minimal bits in the env-specific compile-time configs.
+Pay attention to how the files are organized: most of the configuration has been moved into the `runtime.exs` leaving only minimal bits in the env-specific compile-time configs. Remember that one of the guiding principles of `Dotenvy` is to use runtime configuration whenever possible.
 
 > ### Replace the values to match your app {: .warning}
 >
-> Remember: you will need to replace `YourApp`, `YourAppWeb`, and `:your_app` with
-> the appropriate module and app name for _your application_. Also, you will need
-> to be vigilant and make sure you don't overwrite any other configuration that your
-> application has.
+> You will need to replace `YourApp`, `YourAppWeb`, and `:your_app` with
+> the appropriate modules and app name for _your application_. Don't just copy
+> paste these sample files -- make sure you don't overwrite any existing config
+> for other apps/services that might not be present in this example.
 
 ### config/config.exs
 
 ```elixir
+# config/config.exs
 # This file is responsible for configuring your application
 # and its dependencies with the aid of the Config module.
 #
@@ -68,7 +60,7 @@ config :your_app, YourAppWeb.Endpoint,
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.17.11",
-  src_me: [
+  your_app: [
     args:
       ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
     cd: Path.expand("../assets", __DIR__),
@@ -78,7 +70,7 @@ config :esbuild,
 # Configure tailwind (the version is required)
 config :tailwind,
   version: "3.4.3",
-  src_me: [
+  your_app: [
     args: ~w(
       --config=tailwind.config.js
       --input=css/app.css
@@ -100,6 +92,7 @@ import_config "#{config_env()}.exs"
 ### config/dev.exs
 
 ```elixir
+# config/dev.exs
 import Config
 
 # Compile-time configuration includes code_reloader, debug_errors, and force_ssl
@@ -113,7 +106,7 @@ config :your_app, YourAppWeb.Endpoint,
     patterns: [
       ~r"priv/static/(?!uploads/).*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/src_me_web/(controllers|live|components)/.*(ex|heex)$"
+      ~r"lib/your_app_web/(controllers|live|components)/.*(ex|heex)$"
     ]
   ],
   # The watchers configuration can be used to run external
@@ -140,6 +133,7 @@ config :logger, :console, format: "[$level] $message\n"
 ### config/test.exs
 
 ```elixir
+# config/test.exs
 import Config
 
 # Print only warnings and errors during test
@@ -165,6 +159,7 @@ config :logger, level: :info
 ### config/runtime.exs
 
 ```elixir
+# config/runtime.exs
 import Config
 import Dotenvy
 
@@ -190,7 +185,7 @@ source!([
 
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the
-# system starts Do not define any compile-time configuration in here,
+# system starts. Do not define any compile-time configuration in here,
 # as it won't be applied.
 
 # ## Using releases
@@ -198,7 +193,7 @@ source!([
 # If you use `mix release`, you need to explicitly enable the server
 # by passing the PHX_SERVER=true when you start it:
 #
-#     PHX_SERVER=true bin/src_me start
+#     PHX_SERVER=true bin/your_app start
 #
 # Alternatively, you can use `mix phx.gen.release` to generate a `bin/server`
 # script that automatically sets the env var above.
@@ -338,6 +333,7 @@ config :swoosh, local: env!("SWOOSH_LOCAL_MEMORY_STORAGE", :boolean)
 The shared/default values can be listed and documented here.  The `.dev.env` and other `.env` files can either copy this file in its entirety (for easier diff comparisons), or they can include only the variables that they need to change.
 
 ```env
+# envs/.env (default/shared config)
 # ###################
 # Distributed Node  #
 # ###################
@@ -401,7 +397,7 @@ MIX_TEST_PARTITION=
 PG_USERNAME=postgres
 PG_PASSWORD=postgres
 PG_HOSTNAME=localhost
-PG_DATABASE=src_me_dev
+PG_DATABASE=your_app_dev
 PG_POOL=DBConnection.ConnectionPool
 POOL_SIZE=10
 # DATABASE_URL format is `ecto://USER:PASS@HOST/DATABASE`
@@ -426,6 +422,7 @@ SWOOSH_MAILER_ADAPTER=Swoosh.Adapters.Local
 ### envs/.dev.env
 
 ```env
+# envs/.dev.env
 HTTP_INTERFACE=127.0.0.1
 HTTP_CHECK_ORIGIN=false
 PORT=4000
@@ -449,6 +446,7 @@ ECTO_STACKTRACE=true
 ### envs/.test.env
 
 ```env
+# envs/.test.env
 HTTP_INTERFACE=127.0.0.1
 HTTP_CHECK_ORIGIN=false
 PORT=4002
@@ -476,6 +474,7 @@ SWOOSH_MAILER_ADAPTER=Swoosh.Adapters.Test
 In prod, you may have certain env variables provided by your host.  For example. [Fly.io](https://fly.io/) will define a number of env variables for you. It can be helpful to list them in your `.prod.env` file as a reminder.
 
 ```env
+# envs/.prod.env
 ENABLE_DISTRIBUTED_MODE=true
 # DNS_CLUSTER_QUERY= # set by Fly.io
 

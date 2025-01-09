@@ -97,3 +97,11 @@ The hash-tag `#` symbol denotes a comment when on its own line or when it follow
     # This is a comment
     SECRET_KEY=YOURSECRETKEYGOESHERE # also a comment
     SECRET_HASH="something-with-a-hash-#-this-is-not-a-comment"
+
+## Command Substitution
+
+You need to add the output of a shell command in one of your variables? Simply add it with `$(your_command)` (available since version 1.0.0). This is helpful when tying into 3rd party password managers, e.g. [1Password](docs/1password.md).
+
+    API_KEY=$(op read op://MyVault/SomeService/api_key)
+
+As with interpolated variables, the `$()` syntax only triggers the execution of a shell command when it appears _within double-quotes or in a line without quotes_. If you quote your value with single-quotes, the values will remain as-is.
