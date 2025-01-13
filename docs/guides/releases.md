@@ -1,6 +1,6 @@
 # Releases
 
-One of the hurdles when dealing with Elixir releases is that only certain files are packaged into them.  Any new ad-hoc files like our `.env` files are not included by default.  One way to ensure that our additional files get packaged into the release is to specify the [`overlays` option](https://hexdocs.pm/mix/1.12/Mix.Tasks.Release.html#module-options) in your `mix.exs`. To do this we edit the `mix.exs` file to specify the `envs/` directory which contains your `.env` files:
+One of the hurdles when dealing with Elixir releases is that only certain files are packaged into them.  Any new ad-hoc files like our `.env` files are not included by default.  One way to ensure that our additional files get packaged into the release is to specify the [`overlays` option](https://hexdocs.pm/mix/Mix.Tasks.Release.html#module-options) in your `mix.exs`. To do this we edit the `mix.exs` file to specify the `envs/` directory which contains your `.env` files:
 
 ```elixir
 # mix.exs

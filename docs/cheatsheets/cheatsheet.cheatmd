@@ -1,6 +1,6 @@
 # Cheatsheet
 
-Quick reference for using Dotenvy.
+Quick reference for using `Dotenvy`.
 
 ## Setup
 {: .col-3}
@@ -13,7 +13,7 @@ Code editors recognize the `.env` extension.
 #### Example envs/dev.env
 
 ```env
-LOG_LEVEL=debug
+API_KEY=xyz
 AWS_REGION="us-east-1"
 HTTP_CLIENT=HTTPoison
 ```
@@ -22,14 +22,14 @@ HTTP_CLIENT=HTTPoison
 
 `envs/dev.env` is tracked by Git. Use it to store sensible non-sensitive defaults.
 
-`envs/dev.local.env` is ignored by Git. Use it to override any variables in the tracked version.
+`envs/dev.overrides.env` is ignored by Git. Use it to override any variables in the tracked version.
 
 This must match the values used in the runtime configuration.
 
 #### .gitignore
 
 ```
-*.local.env
+*.overrides.env
 ```
 
 ### Release Compatibility
@@ -44,9 +44,7 @@ directory into the root of the release.
 defp releases do
 [
     my_app: [
-    include_executables_for: [:unix],
-    steps: [:assemble, :tar],
-    overlays: ["envs/", "priv/", "config/"]
+      overlays: ["envs/"]
     ]
 ]
 end
@@ -115,7 +113,7 @@ PG_SSL=false
 import Config
 import Dotenvy
 
-dir = System.get_env("RELEASE_ROOT") || "envs/"
+dir = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
   
 source!([
   "#{dir}#{config_env()}.env",

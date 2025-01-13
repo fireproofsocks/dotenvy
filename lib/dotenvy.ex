@@ -145,7 +145,7 @@ defmodule Dotenvy do
 
   def env!(variable, type) do
     case fetch_var(variable) do
-      :error -> raise "Dotenv variable #{variable} not set"
+      :error -> raise "Environment variable #{variable} not set"
       {:ok, value} -> to!(value, type)
     end
   rescue
@@ -241,10 +241,8 @@ defmodule Dotenvy do
 
         iex> Dotenvy.source([System.get_env(), ".env"])
 
-  Including the `System.get_env()` before your files means that your files have final
-  say over the values, potentially overriding any pre-existing system env vars. In
-  some cases, you may wish to reference the system vars both _before and after_ your own
-  .env files, e.g.
+  In some cases, you may wish to reference the system vars both _before and after_
+  your own .env files, e.g.
 
         iex> Dotenvy.source([System.get_env(), ".env", System.get_env()])
 
@@ -259,6 +257,13 @@ defmodule Dotenvy do
 
   This syntax favors explicitness so there is no confusion over what might have been
   "automagically" accumulated.
+
+  If you need to make any variables parsed from your files available elsewhere in
+  the application via `System.get_env/2`, then you can call `System.put_env/1` on
+  the output of `Dotenvy.source/2`, e.g.
+
+      iex> {:ok, parsed_vars} = Dotenvy.source([".env", System.get_env()])
+      iex> System.put_env(parsed_vars)
 
   """
   @spec source(inputs :: input_source() | [input_source()], opts :: keyword()) ::

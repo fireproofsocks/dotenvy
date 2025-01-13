@@ -1,4 +1,4 @@
-# A Note on Configuration Providers
+# Configuration Providers
 
 [Configuration providers](https://hexdocs.pm/elixir/Config.Provider.html) are most often invoked in the context of releases. Although they can solve certain problems that arise in production deployments, they tend to be an awkward fit for regular day-to-day development. `Dotenvy` seeks to normalize how configuration is loaded across environments, so having different methods depending on how you run your app is antithetical. We do not want some code that runs only in certain environments and not in others: it can make for untested or untestable code!
 

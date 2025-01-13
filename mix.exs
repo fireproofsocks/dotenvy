@@ -24,6 +24,7 @@ defmodule Dotenvy.MixProject do
         source_url: @source_url,
         logo: "assets/logo.png",
         extras: extras(),
+        groups_for_extras: groups_for_extras(),
         skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
       ]
     ]
@@ -33,15 +34,29 @@ defmodule Dotenvy.MixProject do
     [
       "README.md",
       "cheatsheet.cheatmd",
-      "docs/getting_started.md",
-      "docs/phoenix.md",
-      "docs/livebooks.md",
-      "docs/flyio.md",
+      "docs/guides/getting_started.md",
+      "docs/guides/phoenix.md",
+      "docs/guides/livebooks.md",
+      "docs/guides/flyio.md",
       "docs/dotenv-file-format.md",
-      "docs/1password.md",
+      "docs/guides/1password.md",
+      "docs/guides/simple_setup.md",
       "docs/configuration_providers.md",
       "docs/releases.md",
       "CHANGELOG.md"
+    ]
+  end
+
+  defp groups_for_extras do
+    [
+      Introduction: ~r/guides\/introduction\/.?/,
+      Guides: ~r/guides\/[^\/]+\.md/,
+      Authentication: ~r/guides\/authentication\/.?/,
+      "Real-time": ~r/guides\/real_time\/.?/,
+      Testing: ~r/guides\/testing\/.?/,
+      Deployment: ~r/guides\/deployment\/.?/,
+      Cheatsheets: ~r/guides\/cheatsheets\/.?/,
+      "How-to's": ~r/guides\/howto\/.?/
     ]
   end
 
