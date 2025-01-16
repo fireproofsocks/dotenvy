@@ -106,8 +106,13 @@ defmodule Dotenvy.Transformer do
       nil
       iex> to!("5432", :integer)
       5432
+      iex> to!("DateTime", :module)
+      DateTime
       iex> to!("foo", fn val -> val <> "bar" end)
       "foobar"
+      iex> Dotenvy.Transformer.to!("Oops", :float)
+        ** (Dotenvy.Error) Unparsable as float
+        (dotenvy 1.0.0) lib/dotenvy/transformer.ex:165: Dotenvy.Transformer.to!/2
   """
   @spec to!(str :: binary(), type :: conversion_type()) :: any()
   def to!(str, :atom) when is_binary(str) do
@@ -162,7 +167,7 @@ defmodule Dotenvy.Transformer do
   def to!(str, :float) when is_binary(str) do
     case Float.parse(str) do
       :error ->
-        raise(Error, "Unparsable")
+        raise(Error, "Unparsable as float")
 
       {value, _} ->
         value
@@ -179,7 +184,7 @@ defmodule Dotenvy.Transformer do
   def to!(str, :integer) when is_binary(str) do
     case Integer.parse(str) do
       :error ->
-        raise(Error, "Unparsable")
+        raise(Error, "Unparsable as integer")
 
       {value, _} ->
         value

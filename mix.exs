@@ -18,6 +18,7 @@ defmodule Dotenvy.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [coveralls: :test, "coveralls.detail": :test],
+      build_per_environment: false,
       docs: [
         main: "readme",
         source_ref: "v#{@version}",

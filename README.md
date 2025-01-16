@@ -142,7 +142,7 @@ source(["#{config_env()}.env", "#{config_env()}.override.env"])
 source(["#{config_env()}.env", "#{config_env()}.override.env", System.get_env()])
 ```
 
-If you are relying on [variable interpolation](docs/dotenv-file-format.md) in your `.env` files, you may also need to include `System.get_env()` (or an equivalent subset) _before_ you list your `.env` files.  This is necessary to make values available to the file parser.
+If you are relying on [variable interpolation](docs/reference/dotenv-file-format.md) in your `.env` files, you may also need to include `System.get_env()` (or an equivalent subset) _before_ you list your `.env` files.  This is necessary to make values available to the file parser.
 
 ```elixir
 # in dotenvy 0.5.0 or before:
@@ -156,4 +156,4 @@ The change in syntax introduced in v0.6.0 favors a declarative list of sources o
 
 ---------------------------------------------------
 
-Image Attribution: by author
+Image Attribution: artwork by Beck

@@ -70,9 +70,9 @@ Next, let's try to access the environment variable directly:
 
 What happened? `Application.get_env(:example, :secret)` worked, so why doesn't `System.get_env("SECRET")` see the variable?
 
-The answer to this riddle is that `Dotenvy` is read-only: it may _read_ environment variables (so long as you pass `System.get_env()` or similar as an input to `Dotenvy.source/2`), but `Dotenvy` does not _set_ environment variables. This keeps things a bit more locked down.
+The answer to this riddle is that `Dotenvy` is read-only: `Dotenvy` does not _set_ environment variables. This helps keep things locked down. It may be counter-intuitive, but `Dotenvy` doesn't even necessarily read environment variables!  _`Dotenvy` only deals with the inputs that you pass it_. `Dotenvy` only reads environment variables if you pass it the output from `System.get_env()`.
 
-> ### Core Concept: `Dotenvy` does not set ENV vars {: .info}
+> ### Core Concept: `Dotenvy` does not **set** ENV vars {: .info}
 >
 > Any variables you declare in your from in your `env` files are _not_ exported
 > back to the system; i.e. `System.put_env/2` is NOT called. In other words,
@@ -139,8 +139,8 @@ Understanding type-casting is another core concept in helping to leverage `Doten
 > ### Core Concept: type-casting {: .info}
 >
 > For each variable you read via `Dotenvy.env!/2` in `config/runtime.exs`, you
-> should consider what the resulting Elixir value -- can the value be empty? Are
-> `nil` values allowed? Choose the [conversion type](`t:Dotenvy.Transformer.conversion_type/0`) that best supplies your app
-> with the value it needs.
+> should consider what the resulting Elixir value needs to be. Can the value be empty? Are
+> `nil` values allowed? Choose the [conversion type](`t:Dotenvy.Transformer.conversion_type/0`) 
+> that best supplies your app with the value it needs.
 
 See the section on [releases](docs/guides/releases.md) for further information on how `Dotenvy` works in the context of a Mix release.
