@@ -1,17 +1,10 @@
 # Phoenix
 
-This page shows you how to either generate a new Phoenix application using a custom Dotenvy-friendly generator OR how to modify the config files of an existing Phoenix app.
-
-## Installing the Dotenvy Generators
-
-The easiest way to get a Phoenix app up and running using `Dotenvy` is to use the generators available via the [`dotenvy_generators`](https://hex.pm/packages/dotenvy_generators) package.  These _replace_ the generators that ship with Phoenix, so it is important that you first uninstall the `phx_new` generators (if installed):
-
-    mix archive.uninstall phx_new
-    mix archive.install hex dotenvy_generators
-
-Once complete, running `mix help` should show a new task (`dot.new`) and the descriptions for the `phx.new` task should now reference `Dotenvy`.
+This page shows you how to either generate a new Phoenix application using the [`dotenvy_generators` package](docs/reference/generators.md) OR how to retrofit the config files of an existing Phoenix app.
 
 ## Creating a new Phoenix application that uses Dotenvy
+
+Make sure you have installed the [`dotenvy_generators`](docs/reference/generators.md) before continuing!
 
 In a new terminal window, you can run the new task to generate a new Phoenix app, e.g. `mix phx.new.dotenvy hello`.  This should generate a functional Phoenix application that leverages `Dotenvy` for its configuration.
 
@@ -19,7 +12,7 @@ Have a look over the file structure: notice the `envs/` directory.  The files th
 
 ## Manually Editing Files
 
-If you already have a Phoenix application and you want to retrofit it to use `Dotenvy`, then you can reference the files below as a guideline for editing your configuration files.
+If you have an existing Phoenix application and you want to modify it to use `Dotenvy`, then you can reference the files below as a guideline for editing your configuration files.
 
 Pay attention to how the files are organized: most of the configuration has been moved into the `runtime.exs` leaving only minimal bits in the env-specific compile-time configs. Remember that one of the guiding principles of `Dotenvy` is to use runtime configuration whenever possible.
 
@@ -27,7 +20,7 @@ Pay attention to how the files are organized: most of the configuration has been
 >
 > You will need to replace `YourApp`, `YourAppWeb`, and `:your_app` with
 > the appropriate modules and app name for _your application_. Don't just copy
-> paste these sample files -- make sure you don't overwrite any existing config
+> and paste these sample files -- make sure you don't overwrite any existing config
 > for other apps/services that might not be present in this example.
 
 ### config/config.exs
@@ -165,23 +158,18 @@ import Dotenvy
 
 # For local development, read dotenv files inside the envs/ dir;
 # for releases, read them at the RELEASE_ROOT
-config_dir_prefix =
-  case System.fetch_env("RELEASE_ROOT") do
-    :error ->
-      IO.puts("Loading dotenv files from envs/")
-      "envs/"
+env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/")
 
-    {:ok, release_root} ->
-      IO.puts("Loading dotenv files from #{release_root}")
-      "#{release_root}/"
-  end
+source!(
+  [
+    Path.absname(".env", env_dir_prefix),
+    Path.absname(".#{config_env()}.env", env_dir_prefix),
+    Path.absname(".#{config_env()}.overrides.env", env_dir_prefix),
+    System.get_env()
+  ],
+  require_files: [Path.absname(".env", env_dir_prefix)]
+)
 
-source!([
-  "#{config_dir_prefix}.env",
-  "#{config_dir_prefix}.#{config_env()}.env",
-  "#{config_dir_prefix}.#{config_env()}.overrides.env",
-  System.get_env()
-])
 
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the
@@ -330,7 +318,7 @@ config :swoosh, local: env!("SWOOSH_LOCAL_MEMORY_STORAGE", :boolean)
 
 ### envs/.env
 
-The shared/default values can be listed and documented here.  The `.dev.env` and other `.env` files can either copy this file in its entirety (for easier diff comparisons), or they can include only the variables that they need to change.
+The shared/default values can be listed and documented here.  The `.dev.env` and other `.env` files can either copy this file in its entirety and modify the values (for easier diff comparisons), or they can include only the variables that they need to change.
 
 ```env
 # envs/.env (default/shared config)

@@ -4,13 +4,13 @@ The concept of environment variables is simple and `Dotenvy` aims to make your a
 
 > ## Prerequisite: install the `dotenvy_generators` {: .info}
 >
-> If you haven't already, [install the `dotenvy_generators`](guides/generators.md).
+> If you haven't already, [install the `dotenvy_generators`](docs/reference/generators.md).
 >
 > When you run `mix help`, you should see `dot.new` as one of the available tasks. Make sure that's available before continuing.
 
-## Generating an app using `dot.new
+## Generating an app using `dot.new`
 
-The `dot.new` mix task is available when you have installed the [`dotenvy_generators`](guides/generators.md). We can use it generate a new Elixir app:
+The `dot.new` mix task is available when you have installed the [`dotenvy_generators`](docs/reference/generators.md). We can use it generate a new Elixir app:
 
     mix dot.new example
 
@@ -78,6 +78,7 @@ The answer to this riddle is that `Dotenvy` is read-only: it may _read_ environm
 > back to the system; i.e. `System.put_env/2` is NOT called. In other words,
 > declaring a variable `FOO` in one of your parsed `.env` files does not mean
 > you can use `System.get_env/2` to retrieve it later. This encapsulation is by design!
+> If you want to set environment variables, you must do it explicitly.
 
 ## Establishing a clean contract
 
@@ -105,7 +106,7 @@ Alternatively, you can provide this value in your env files. Add the following t
 
 Your application will now start in the dev environment. However if you try to run tests, you will once again see the `RuntimeError`. You can rectify this by supplying a value in the `envs/.test.dev` file.
 
-A good convention here is to have a default `.env` file loaded first which lists _all_ the variables that your app needs. That's a great place to put some documentation too.
+A good convention here is to have a default `.env` file loaded first which lists _all_ the variables that your app needs. That's a great place to put some documentation too!
 
 > ### Core Concept: your app should dictate which variables it needs {: .info}
 >
@@ -131,42 +132,15 @@ Let's modify the line in our `runtime.exs` and replace `:string!` with `:string`
 
     config :example, :password, env!("PASSWORD", :string)
 
-Now the application starts fine, even if the `PASSWORD` value is empty.
+Now the application starts fine, even if the `PASSWORD` value is empty. Probably a password needs to have a value, so using `:string!` for the second argument is probably more appropriate, but you can decide this on a case-by-case basis.
 
 Understanding type-casting is another core concept in helping to leverage `Dotenvy` so  your app get what it needs to run.
 
-The `t:Dotenvy.Transformer.conversion_type/0` type is where all supported type conversions are defined.
-
-> #### Overlays {: .info}
+> ### Core Concept: type-casting {: .info}
 >
-> When you specify a folder in the `overlays` option in your `mix.exs`, then the
-> _contents_ (and not the folder itself) will be copied to the root of the release.
+> For each variable you read via `Dotenvy.env!/2` in `config/runtime.exs`, you
+> should consider what the resulting Elixir value -- can the value be empty? Are
+> `nil` values allowed? Choose the [conversion type](`t:Dotenvy.Transformer.conversion_type/0`) that best supplies your app
+> with the value it needs.
 
-Since these files are copied to the root of your release, the relative paths used in your `runtime.exs` will not be able to find them when your app is running in the context of a release. One solution to this is to rely on the `RELEASE_ROOT` system environment variable which is set when a release is run. If this value exists, it will represent the fully qualified path to your release; this variable will not be set when running your app locally (e.g. during development).
-
-We can use the presence of the `RELEASE_ROOT` to determine a directory prefix for where to look for our `.env` files, e.g.:
-
-```elixir
-import Config
-import Dotenvy
-
-# For local development, read dotenv files inside the envs/ dir;
-# for releases, read them at the RELEASE_ROOT
-env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
-
-source!([
-  "#{env_dir_prefix}.env",
-  "#{env_dir_prefix}.#{config_env()}.env",
-  "#{env_dir_prefix}.#{config_env()}.local.env",
-  System.get_env()
-])
-```
-
-Teach:
-
-- the contract: which ENVs you need
-- envs are not persisted after they are read
-- building a strong contract
-- type-casting... what happens when a variable is NOT SET vs. EMPTY?
-- files are optional unless they're required
-- chosen envs/ directory and how to change it
+See the section on [releases](docs/guides/releases.md) for further information on how `Dotenvy` works in the context of a Mix release.

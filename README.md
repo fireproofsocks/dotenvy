@@ -28,28 +28,45 @@ It has no dependencies.
 of the most effective places to do that is inside `config/runtime.exs` (available
 since Elixir v1.11).
 
-The `Dotenvy.source/2` function can accept a single file or a list of files.  When combined with `Config.config_env/0` it is easy to load up environment-specifc config, e.g.
-
-```elixir
-source(["#{config_env()}.env", "#{config_env()}.override.env", System.get_env()])
-```
-
-By default, the listed files do not _need_ to exist -- the function only needs to know where to look. This makes it easy to commit default values while still leaving the door open to developers to override values via their own configuration files.
-
-You control if and how existing system env vars are handled: usually they should take precedence over values defined in `.env` files, so the `System.get_env()` should be included as the final input supplied to `source/2`.
-
-Unlike other packages, `Dotenvy` has no opinions about the names or locations of your `.env` files, you just need to pass their paths to `Dotenvy.source/2` or `Dotenvy.source!/2`.
-
-For a simple example, we can load a single file:
+The `Dotenvy.source/2` function can accept a single file or a list of files.  When combined with `Config.config_env/0` it is easy to load up environment-specifc config. A common setup in your `config/runtime.exs` would include a block like the following:
 
 ```elixir
 # config/runtime.exs
 import Config
 import Dotenvy
 
-env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
+env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/")
 
-source!(["#{env_dir_prefix}.env", System.get_env()])
+source!([
+  Path.absname(".env", env_dir_prefix),
+  Path.absname(".#{config_env()}.env", env_dir_prefix),
+  Path.absname(".#{config_env()}.overrides.env", env_dir_prefix),
+  System.get_env()
+])
+```
+
+The above example would include the `envs/.env` file for shared/default configuration values and then leverage environment-specific `.env` files (e.g. `envs/.dev.env`) to provide environment-specific values. An `envs/.{MIX_ENV}.overrides.env` file would be referenced in the `.gitignore` file to allow developers to override any values in version-controlled files. System environment variables are given final say over the values via `System.get_env()`.  Think of `Dotenvy.source/2` as a _merge operation_, similar to `Map.merge/2`: the last input takes precedence.
+
+By default, the listed files do not _need_ to exist (you can leverage the `:require_files` option if needed). The `Dotenvy.source/2` function only needs to know where to look. This makes it easy to commit default values while still leaving the door open to developers to override values via their own configuration files.
+
+You control if and how existing system env vars are handled: usually they should take precedence over values defined in `.env` files, so for most apps, the `System.get_env()` should be included as the final input supplied to `source/2`.
+
+Unlike other packages, `Dotenvy` has no opinions about the names or locations of your `.env` files, you just need to pass their paths to `Dotenvy.source/2` or `Dotenvy.source!/2`.
+
+For a simple example, we can load up a `.env` file containing all defaults and an environment-specific file (e.g. `.dev.env`).  Remember to use both [`Path.expand/1`](https://hexdocs.pm/elixir/Path.html#expand/1) and [`Path.absname/2`](https://hexdocs.pm/elixir/Path.html#absname/2) so that the operating system can resolve your file names into fully qualified paths that work when you are developing locally or when your app is running as a release or inside a Livebook.
+
+```elixir
+# config/runtime.exs
+import Config
+import Dotenvy
+
+env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/")
+
+source!([
+  Path.absname(".env", env_dir_prefix), 
+  Path.absname("#{config_env()}.env", env_dir_prefix), 
+  System.get_env()
+  ])
 
 config :myapp, MyApp.Repo,
     database: env!("DATABASE", :string!),
@@ -75,9 +92,9 @@ POOL=
 
 When you set up your application configuration in this way, you are creating a contract with the environment: `Dotenvy.env!/2` will raise if the required variables have not been set or if the values cannot be properly transformed. This is an approach that works equally well for your day-to-day development and for mix releases.
 
-Read the [Getting Started](docs/getting_started.md) for more detailed examples of how to configure your app.
+Read the [Getting Started](docs/getting_started.md) for more details.
 
-Refer to the ["dotenv" (`.env`) file format](docs/dotenv-file-format.md) for more examples and features of the supported syntax.
+Refer to the ["dotenv" (`.env`) file format](docs/reference/dotenv-file-format.md) for more examples and features of the supported syntax.
 
 See the `Dotenvy` module documentation on its functions.
 
@@ -139,4 +156,4 @@ The change in syntax introduced in v0.6.0 favors a declarative list of sources o
 
 ---------------------------------------------------
 
-Image Attribution: "dot" by Stepan Voevodin from the [Noun Project](https://thenounproject.com/)
+Image Attribution: by author

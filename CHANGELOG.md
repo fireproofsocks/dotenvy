@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - new documentation pages added to introduce generators and more examples
 - Deletes deprecated `Dotenvy.env/3` function
 - Updates dependencies to latest
+- Better error messages for unset variables
+- Better error messages for `:require_files` errors
+- Updated Logo
 
 ## v0.9.0
 

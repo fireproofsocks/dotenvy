@@ -340,8 +340,14 @@ defmodule Dotenvy do
     required_set = MapSet.new(require_files)
 
     case MapSet.equal?(required_set, input_set) || MapSet.subset?(required_set, input_set) do
-      true -> :ok
-      false -> {:error, "Missing one or more files specified by :require_files"}
+      true ->
+        :ok
+
+      false ->
+        missing_set = MapSet.difference(required_set, input_set)
+
+        {:error,
+         "Missing file(s) specified by require_files: #{inspect(Enum.join(missing_set, ";"))}"}
     end
   end
 

@@ -31,8 +31,7 @@ For the sake of portability (and sanity), environment variable names must consis
 
 ## Values
 
-Values are to the right of the equals sign. They may be quoted.
-Using single quotes will prevent variables from being interpolated.
+Values are to the right of the equals sign. They may be quoted. Using single quotes will prevent variables from being interpolated and any command substitution will not be executed.
 
     SIMPLE=xyz123
     INTERPOLATED="Multiple\nLines and variable substitution: ${SIMPLE}"
@@ -56,7 +55,7 @@ The following character strings will be interpreted (i.e. escaped) as specific c
 - `\\` Backslash; -> `<<92, 92>>` -> `<<92>>`
 - `\uFFFF` Unicode escape (4 hex characters to denote the codepoint)
 
-If a backslash precedes any other character, that character will be interpreted literally: i.e. the backslash will be ignored and removed from output.
+If a backslash precedes any other character, the backslash will be ignored and removed from output.
 
 ### Interpolation (a.k.a. Variable Substitution)
 
@@ -100,8 +99,8 @@ The hash-tag `#` symbol denotes a comment when on its own line or when it follow
 
 ## Command Substitution
 
-You need to add the output of a shell command in one of your variables? Simply add it with `$(your_command)` (available since version 1.0.0). This is helpful when tying into 3rd party password managers, e.g. [1Password](docs/1password.md).
+You need to add the output of a shell command in one of your variables? Simply add it with `$(your_command)` (available since version 1.0.0). This is helpful when tying into 3rd party password managers, e.g. [1Password](docs/guides/1password.md).
 
     API_KEY=$(op read op://MyVault/SomeService/api_key)
 
-As with interpolated variables, the `$()` syntax only triggers the execution of a shell command when it appears _within double-quotes or in a line without quotes_. If you quote your value with single-quotes, the values will remain as-is.
+As with interpolated variables, the `$()` syntax only triggers the execution of a shell command when it appears _within double-quotes or in a line without quotes_. If you quote your value with single quotes, the values will remain as-is.

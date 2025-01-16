@@ -63,13 +63,14 @@ environment variables will take precedence over anything parsed from the `.env` 
 import Config
 import Dotenvy
 
-dir = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
+env_dir = System.get_env("RELEASE_ROOT") || Path.expand("./envs/")
   
 source!([
-  "#{dir}#{config_env()}.env",
-  "#{dir}#{config_env()}.local.env",
-  System.get_env()
-])
+    Path.absname(".env", env_dir),
+    Path.absname(".#{config_env()}.env", env_dir),
+    Path.absname(".#{config_env()}.overrides.env", env_dir),
+    System.get_env()
+  ])
 ```
 
 ## Example Database Configuration
@@ -113,13 +114,14 @@ PG_SSL=false
 import Config
 import Dotenvy
 
-dir = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
+env_dir = System.get_env("RELEASE_ROOT") || Path.expand("./envs/")
   
 source!([
-  "#{dir}#{config_env()}.env",
-  "#{dir}#{config_env()}.local.env",
-  System.get_env()
-])
+    Path.absname(".env", dir),
+    Path.absname(".#{config_env()}.env", env_dir),
+    Path.absname(".#{config_env()}.overrides.env", env_dir),
+    System.get_env()
+  ])
 
 config :my_app, MyApp.PGRepo,
   pool: env!("PG_POOL", :module?),

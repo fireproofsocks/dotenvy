@@ -2,7 +2,7 @@ defmodule Dotenvy.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/fireproofsocks/dotenvy"
-  @version "0.9.0"
+  @version "1.0.0"
 
   def project do
     [
@@ -33,30 +33,27 @@ defmodule Dotenvy.MixProject do
   def extras do
     [
       "README.md",
-      "cheatsheet.cheatmd",
       "docs/guides/getting_started.md",
+      "docs/guides/releases.md",
       "docs/guides/phoenix.md",
+      "docs/guides/minimal.md",
       "docs/guides/livebooks.md",
       "docs/guides/flyio.md",
-      "docs/dotenv-file-format.md",
       "docs/guides/1password.md",
-      "docs/guides/simple_setup.md",
-      "docs/configuration_providers.md",
-      "docs/releases.md",
+      "docs/cheatsheets/cheatsheet.cheatmd",
+      "docs/reference/philosophy.md",
+      "docs/reference/dotenv-file-format.md",
+      "docs/reference/configuration_providers.md",
+      "docs/reference/generators.md",
       "CHANGELOG.md"
     ]
   end
 
   defp groups_for_extras do
     [
-      Introduction: ~r/guides\/introduction\/.?/,
       Guides: ~r/guides\/[^\/]+\.md/,
-      Authentication: ~r/guides\/authentication\/.?/,
-      "Real-time": ~r/guides\/real_time\/.?/,
-      Testing: ~r/guides\/testing\/.?/,
-      Deployment: ~r/guides\/deployment\/.?/,
       Cheatsheets: ~r/guides\/cheatsheets\/.?/,
-      "How-to's": ~r/guides\/howto\/.?/
+      "Extra Info": ~r/reference\/[^\/]+\.md/
     ]
   end
 
@@ -81,7 +78,6 @@ defmodule Dotenvy.MixProject do
         "assets/logo.png",
         "mix.exs",
         "README*",
-        "cheatsheet.cheatmd",
         "CHANGELOG*",
         "LICENSE*"
       ]

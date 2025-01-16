@@ -1,15 +1,15 @@
 # Fly.io
 
-`Dotenvy` can be used when deploying an app to [Fly.io](https://fly.io/). Folloing the instructions on the [Phoenix](docs/phoenix.md) page will get you most of the way there, but you also need to modify the `Dockerfile` so it copies over your `envs/` directory so your `.env` files are available to the `release` command.
+`Dotenvy` can be used when deploying an app to [Fly.io](https://fly.io/); other hosting services may require customizations similar to the ones demonstrated here. Following the instructions on the [Phoenix](docs/phoenix.md) page will get you most of the way there, but you also need to modify the `Dockerfile` so it copies over your `envs/` directory: the `.env` files must be available to the `release` command. The default Fly.io Dockerfile needs a small alteration to ensure that your `.env` files are along for the ride.
 
 ## Dockerfile
 
-A `Dockerfile` gets generated when you setup your app (it is ultimately generated from `mix phx.gen.release --docker`). The `Dockerfile` is ultimately what is responsible for running `mix release`, so you need to ensure that all of your files and folders are copied into the container so this command can run.
+A `Dockerfile` gets generated when you setup your app (it is ultimately generated from `mix phx.gen.release --docker`). The `Dockerfile` is ultimately what is responsible for running `mix release`, so you need to ensure that all of your files and folders are copied into the container.
 
-In the examples provided in this documentation, `.env` files are stored in a directory named `envs/`.  If that's the directory housing your `.env` files, then you will need to make sure that that folder gets copied into the Docker container so it can properly build the release.  To do this, you will need to add a line `COPY envs envs` _before_ the `Run mix release` command.
+In the examples provided in this documentation, `.env` files are stored in a directory named `envs/`.  If that's the directory housing your `.env` files, then you will need to ensure that folder gets copied into the Docker container so it can properly build the release.  To do this, you will need to add a line `COPY envs envs` _before_ the `Run mix release` command.
 
 ```docker
-# ... existing Docker stuf...
+# ... existing Docker stuff...
 
 # Compile the release
 RUN mix compile
@@ -27,7 +27,25 @@ RUN mix release
 # ... existing Docker stuff cont'd...
 ```
 
-Once that line is there, then running `fly deploy` and other `flyctl` commands should be able to build the release and include the `.env` files as expected.
+Once that line is there, then running `fly deploy` and other `flyctl` commands should be able to build the release and include the `.env` files as expected. You can test the standard GitHub workflows by pushing changes to `main`.
+
+## The importance of path names
+
+Because your app executes inside a Docker container, it is really important to use `Path.absname/2` to reference your `.env` files. The reason we mention this _ad nauseam_ in these docs is because it's so critical.  Different release strategies may set the `RELEASE_ROOT` variable with or without a trailing slash, and that can mean that `Dotenvy` can't find your `.env` files.  It can be helpful to specify the `:require_files` option to `Dotenvy.source/2` just to help alert you when the paths may be pointing to the wrong place, e.g.
+
+```elixir
+env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/")
+
+source!(
+  [
+    Path.absname(".env", env_dir_prefix),
+    Path.absname(".#{config_env()}.env", env_dir_prefix),
+    Path.absname(".#{config_env()}.overrides.env", env_dir_prefix),
+    System.get_env()
+  ],
+  require_files: [Path.absname(".env", env_dir_prefix)]
+)
+```
 
 ## Environment Variables
 

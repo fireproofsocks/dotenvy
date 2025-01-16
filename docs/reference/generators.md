@@ -7,7 +7,9 @@ The most important tasks include:
 - `dot.new`: a variant of the humble `mix new` task
 - `phx.new`: an alternate of the Phoenix `mix phx.new` task, used to spin up Phoenix applications
 
-## Installing the Dotenvy Generators
+_The generators are still being developed, so they may in the process of being updated/improved._
+
+## Installation
 
 In order to install the `Dotenvy` generator scripts, you need to run two commands from your terminal: one to remove the `phx_new` generators (if present), and one to install the `dotenvy_generators`.  Run the following two commands:
 
@@ -16,6 +18,6 @@ In order to install the `Dotenvy` generator scripts, you need to run two command
 
 Once this has executed successfully, you should see the `dot.new` task as one of the available tasks when you run `mix help`.
 
-We have to uninstall the `phx_new` generators because `dotenvy_generators` uses the same names for its mix tasks (this may change later... stat tuned).
+We have to uninstall the `phx_new` generators because `dotenvy_generators` uses the same names for its mix tasks (this may change later... stay tuned).
 
 See also the dedicated instructions in the [Dotenvy Generators](https://hexdocs.pm/dotenvy_generators/) package.

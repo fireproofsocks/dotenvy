@@ -168,7 +168,7 @@ defp releases do
 end
 ```
 
-> #### Overlays {: .info}
+> ### Overlays {: .info}
 >
 > When you specify a folder in the `overlays` option in your `mix.exs`, then the
 > _contents_ (and not the folder itself) will be copied to the root of the release.
@@ -183,13 +183,13 @@ import Dotenvy
 
 # For local development, read dotenv files inside the envs/ dir;
 # for releases, read them at the RELEASE_ROOT
-env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
+env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/")
 
 source!([
-  "#{env_dir_prefix}.env",
-  "#{env_dir_prefix}.#{config_env()}.env",
-  "#{env_dir_prefix}.#{config_env()}.local.env",
-  System.get_env()
+    Path.absname(".env", env_dir_prefix),
+    Path.absname(".#{config_env()}.env", env_dir_prefix),
+    Path.absname(".#{config_env()}.overrides.env", env_dir_prefix),
+    System.get_env()
 ])
 ```
 
@@ -208,11 +208,12 @@ Elixir [Umbrella Projects](https://elixir-lang.org/getting-started/mix-otp/depen
 In particular, you have to be very careful about relative paths when working in an umbrella project. Depending on what you're doing, the path may be _relative to a single application_ instead of relative to the root of the repository. As elsewhere, using `Path.expand/1` is a good way to anchor your `config/runtime.exs` to point to the root of the repository instead of it resolving to the root of a specific application within the umbrella. E.g.
 
 ```elixir
-env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
+env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/")
 
 source!([
-  "#{env_dir_prefix}#{config_env()}.env",
-  "#{env_dir_prefix}#{config_env()}.local.env",
-  System.get_env()
-])
+    Path.absname(".env", env_dir_prefix),
+    Path.absname(".#{config_env()}.env", env_dir_prefix),
+    Path.absname(".#{config_env()}.overrides.env", env_dir_prefix),
+    System.get_env()
+  ])
 ```
