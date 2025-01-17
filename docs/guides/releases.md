@@ -27,7 +27,7 @@ end
 > When you specify a folder in the `overlays` option in your `mix.exs`, then the
 > _contents_ (and not the folder itself) will be copied to the root of the release.
 
-During day-to-day development, your `.env` files live inside the `envs/` folder, but when a release is built, they get copied to the _root_ of the release, so we cannot rely on relative paths in `runtime.exs`!  In our examples, we rely on `Path.expand/2`, `Path.absname/2` and the presence of the `RELEASE_ROOT` system environment variable to resolve our relative paths into absolute paths.
+During day-to-day development, your `.env` files live inside the `envs/` folder, but when a release is built, they get copied to the _root_ of the release, so we cannot rely on relative paths in `runtime.exs`!  In our examples, we rely on `Path.expand/2`, `Path.absname/2`, and the presence of the `RELEASE_ROOT` system environment variable to resolve our relative paths into absolute paths.
 
 ```elixir
 env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/")
@@ -61,7 +61,7 @@ Remember that is always safer to use an absolute path. This is especially import
 
 Elixir [Umbrella Projects](https://elixir-lang.org/getting-started/mix-otp/dependencies-and-umbrella-projects.html) consume configuration slightly differently due to how they are organized.
 
-In particular, you have to be very careful about relative paths when working in an umbrella project. Depending on what you're doing, the path may be _relative to a single application_ instead of relative to the root of the repository. As elsewhere, using `Path.expand/1` is a good way to anchor your `config/runtime.exs` so it resolves to the same directory no matter if the app is running during local development or if it's running as a release. 
+In particular, you have to be very careful about relative paths when working in an umbrella project. Depending on what you're doing, the path may be _relative to a single application_ instead of relative to the root of the repository. As elsewhere, using `Path.expand/1` and `Path.absname/2` is a good way to anchor your `config/runtime.exs` so it resolves to the same directory no matter if the app is running locally or as a release.
 
 Once again, the winning pattern for your `config/runtime.exs` will look something like this:
 
@@ -98,3 +98,5 @@ env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./xyz/")
     ]
   end
 ```
+
+Some languages/frameworks store `.env` files at the root of the application, but this isn't easily compatible with Elixir releases.  Rather than trying to push the river, we recommend choosing a sub-folder and leveraging the `:overlays` option.

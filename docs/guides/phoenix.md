@@ -20,10 +20,10 @@ Pay attention to how the files are organized: most of the configuration has been
 >
 > You will need to replace `YourApp`, `YourAppWeb`, and `:your_app` with
 > the appropriate modules and app name for _your application_. Don't just copy
-> and paste these sample files -- make sure you don't overwrite any existing config
+> and paste these sample files!  And make sure you don't overwrite any existing config
 > for other apps/services that might not be present in this example.
 
-### config/config.exs
+### `config/config.exs`
 
 ```elixir
 # config/config.exs
@@ -82,7 +82,7 @@ config :logger, :console,
 import_config "#{config_env()}.exs"
 ```
 
-### config/dev.exs
+### `config/dev.exs`
 
 ```elixir
 # config/dev.exs
@@ -123,7 +123,7 @@ config :your_app, dev_routes: true
 config :logger, :console, format: "[$level] $message\n"
 ```
 
-### config/test.exs
+### `config/test.exs`
 
 ```elixir
 # config/test.exs
@@ -133,7 +133,7 @@ import Config
 config :logger, level: :warning
 ```
 
-### config/prod.exs
+### `config/prod.exs`
 
 ```elixir
 import Config
@@ -149,7 +149,7 @@ config :your_app, YourAppWeb.Endpoint,
 config :logger, level: :info
 ```
 
-### config/runtime.exs
+### `config/runtime.exs`
 
 ```elixir
 # config/runtime.exs
@@ -316,7 +316,7 @@ config :swoosh, api_client: Swoosh.ApiClient.Finch, finch_name: YourApp.Finch
 config :swoosh, local: env!("SWOOSH_LOCAL_MEMORY_STORAGE", :boolean)
 ```
 
-### envs/.env
+### `envs/.env`
 
 The shared/default values can be listed and documented here.  The `.dev.env` and other `.env` files can either copy this file in its entirety and modify the values (for easier diff comparisons), or they can include only the variables that they need to change.
 
@@ -407,7 +407,7 @@ SWOOSH_LOCAL_MEMORY_STORAGE=true
 SWOOSH_MAILER_ADAPTER=Swoosh.Adapters.Local
 ```
 
-### envs/.dev.env
+### `envs/.dev.env`
 
 ```env
 # envs/.dev.env
@@ -457,7 +457,7 @@ ECTO_STACKTRACE=true
 SWOOSH_MAILER_ADAPTER=Swoosh.Adapters.Test
 ```
 
-### envs/.prod.env
+### `envs/.prod.env`
 
 In prod, you may have certain env variables provided by your host.  For example. [Fly.io](https://fly.io/) will define a number of env variables for you. It can be helpful to list them in your `.prod.env` file as a reminder.
 

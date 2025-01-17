@@ -45,7 +45,7 @@ source!([
 ])
 ```
 
-The above example would include the `envs/.env` file for shared/default configuration values and then leverage environment-specific `.env` files (e.g. `envs/.dev.env`) to provide environment-specific values. An `envs/.{MIX_ENV}.overrides.env` file would be referenced in the `.gitignore` file to allow developers to override any values in version-controlled files. System environment variables are given final say over the values via `System.get_env()`.  Think of `Dotenvy.source/2` as a _merge operation_, similar to `Map.merge/2`: the last input takes precedence.
+The above example would include the `envs/.env` file for shared/default configuration values and then leverage environment-specific `.env` files (e.g. `envs/.dev.env`) to provide environment-specific values. An `envs/.{MIX_ENV}.overrides.env` file would be referenced in the `.gitignore` file to allow developers to override any values a file that is not under version control. System environment variables are given final say over the values via `System.get_env()`.  Think of `Dotenvy.source/2` as a _merge operation_, similar to `Map.merge/2`: the last input takes precedence.
 
 By default, the listed files do not _need_ to exist (you can leverage the `:require_files` option if needed). The `Dotenvy.source/2` function only needs to know where to look. This makes it easy to commit default values while still leaving the door open to developers to override values via their own configuration files.
 
@@ -92,7 +92,7 @@ POOL=
 
 When you set up your application configuration in this way, you are creating a contract with the environment: `Dotenvy.env!/2` will raise if the required variables have not been set or if the values cannot be properly transformed. This is an approach that works equally well for your day-to-day development and for mix releases.
 
-Read the [Getting Started](docs/getting_started.md) for more details.
+Read the [Getting Started guide](docs/getting_started.md) for more details.
 
 Refer to the ["dotenv" (`.env`) file format](docs/reference/dotenv-file-format.md) for more examples and features of the supported syntax.
 

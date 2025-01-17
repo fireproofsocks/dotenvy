@@ -2,13 +2,13 @@
 
 The concept of environment variables is simple and `Dotenvy` aims to make your application take advantage of them, but how can you start using them easily in your application?  This page will walk you through kicking the tires of a simple application so you can learn how `Dotenvy` works.
 
-> ## Prerequisite: install the `dotenvy_generators` {: .info}
+> ## Prerequisite {: .info}
 >
 > If you haven't already, [install the `dotenvy_generators`](docs/reference/generators.md).
 >
 > When you run `mix help`, you should see `dot.new` as one of the available tasks. Make sure that's available before continuing.
 
-## Generating an app using `dot.new`
+## Generating an app
 
 The `dot.new` mix task is available when you have installed the [`dotenvy_generators`](docs/reference/generators.md). We can use it generate a new Elixir app:
 
@@ -21,7 +21,7 @@ Follow the prompts given:
 
 The structure should look familiar to you -- the only thing you might notice is the presence of the `envs/` directory.
 
-## Understanding environment-specific env files
+## Environment-specific env files
 
 Take a look at the `config/runtime.exs`. It includes a line like the following which reads from an environment variable named `SECRET`:
 
@@ -70,7 +70,7 @@ Next, let's try to access the environment variable directly:
 
 What happened? `Application.get_env(:example, :secret)` worked, so why doesn't `System.get_env("SECRET")` see the variable?
 
-The answer to this riddle is that `Dotenvy` is read-only: `Dotenvy` does not _set_ environment variables. This helps keep things locked down. It may be counter-intuitive, but `Dotenvy` doesn't even necessarily read environment variables!  _`Dotenvy` only deals with the inputs that you pass it_. `Dotenvy` only reads environment variables if you pass it the output from `System.get_env()`.
+The answer to this riddle is that `Dotenvy` is read-only: `Dotenvy` does not _set_ environment variables. This helps keep things locked down. It may be counter-intuitive, but `Dotenvy` doesn't even necessarily read environment variables!  _`Dotenvy` only reads the inputs you give it_. `Dotenvy` only reads environment variables if you pass it the output from `System.get_env()`.
 
 > ### Core Concept: `Dotenvy` does not **set** ENV vars {: .info}
 >
@@ -80,9 +80,9 @@ The answer to this riddle is that `Dotenvy` is read-only: `Dotenvy` does not _se
 > you can use `System.get_env/2` to retrieve it later. This encapsulation is by design!
 > If you want to set environment variables, you must do it explicitly.
 
-## Establishing a clean contract
+## Establishing a contract
 
-One of the tenets of the [12-factor App](https://12factor.net/) is to have a _clean_ contract with the underlying operating system, offering maximum portability between execution environments. Our `runtime.exs` is largely responsible for this: it dictates exactly which variables it needs.
+One of the tenets of the [12-factor App](https://12factor.net/) is to have a _clean contract_ with the underlying operating system, offering maximum portability between execution environments. Our `runtime.exs` is largely responsible for this: it dictates exactly which variables it needs.
 
 To see this in action, let's add another configuration setting to our app by adding the following line to our example `runtime.exs`:
 
@@ -115,7 +115,7 @@ A good convention here is to have a default `.env` file loaded first which lists
 > there, there's no point in starting the app because it can't do what it needs to do.
 > This is the _contract with the environment_.
 
-## Handling type-casting
+## Type-casting
 
 All environment variables store string values. `Dotenvy.env!/2` and `Dotenvy.env!/3` have as their second argument an atom which determines how to convert the string value. For example, you may need to convert a `PORT` variable into an integer, other values may need to be booleans, and others may need to be atoms or modules.
 
