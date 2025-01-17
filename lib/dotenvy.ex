@@ -20,10 +20,10 @@ defmodule Dotenvy do
   require Logger
 
   @typedoc """
-  An input source may be either a path to an env file or a map with string keys,
-  e.g. `"envs/.env"` or `%{"FOO" => "bar"}`. This allows users to specify a list
-  of env files interspersed with other values from other sources, e.g. `System.get_env()`
-  or values fetched from a secure parameter store.
+  An input source may be either a path to an env file or a map with string keys
+  and values, e.g. `"envs/.env"` or `%{"FOO" => "bar"}`. This allows users to
+  specify a list of env files interspersed with other values from other sources,
+  most commonly `System.get_env()`.
   """
   @type input_source :: String.t() | %{optional(String.t()) => String.t()}
 
