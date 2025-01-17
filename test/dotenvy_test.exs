@@ -137,11 +137,13 @@ defmodule DotenvyTest do
                )
     end
 
-    test "error when :require_files references files not in input" do
-      assert {:error, _} =
+    test "error when :require_files references files not in input includes filename" do
+      assert {:error, msg} =
                source(["test/support/files/a.env", "test/support/files/b.env"],
-                 require_files: ["test/support/files/c.env"]
+                 require_files: ["test/support/files/does_not_exist.env"]
                )
+
+      assert msg =~ "does_not_exist.env"
     end
 
     test "calls side_effect function" do

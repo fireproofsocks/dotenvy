@@ -2,7 +2,7 @@ defmodule Dotenvy.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/fireproofsocks/dotenvy"
-  @version "0.9.0"
+  @version "1.0.0"
 
   def project do
     [
@@ -18,12 +18,14 @@ defmodule Dotenvy.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [coveralls: :test, "coveralls.detail": :test],
+      build_per_environment: false,
       docs: [
         main: "readme",
         source_ref: "v#{@version}",
         source_url: @source_url,
         logo: "assets/logo.png",
         extras: extras(),
+        groups_for_extras: groups_for_extras(),
         skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
       ]
     ]
@@ -32,16 +34,27 @@ defmodule Dotenvy.MixProject do
   def extras do
     [
       "README.md",
-      "cheatsheet.cheatmd",
-      "docs/getting_started.md",
-      "docs/phoenix.md",
-      "docs/livebooks.md",
-      "docs/flyio.md",
-      "docs/dotenv-file-format.md",
-      "docs/1password.md",
-      "docs/configuration_providers.md",
-      "docs/releases.md",
+      "docs/guides/getting_started.md",
+      "docs/guides/releases.md",
+      "docs/guides/phoenix.md",
+      "docs/guides/minimal.md",
+      "docs/guides/livebooks.md",
+      "docs/guides/flyio.md",
+      "docs/guides/1password.md",
+      "docs/cheatsheets/cheatsheet.cheatmd",
+      "docs/reference/philosophy.md",
+      "docs/reference/dotenv-file-format.md",
+      "docs/reference/configuration_providers.md",
+      "docs/reference/generators.md",
       "CHANGELOG.md"
+    ]
+  end
+
+  defp groups_for_extras do
+    [
+      Guides: ~r/guides\/[^\/]+\.md/,
+      Cheatsheets: ~r/guides\/cheatsheets\/.?/,
+      "Extra Info": ~r/reference\/[^\/]+\.md/
     ]
   end
 
@@ -66,7 +79,6 @@ defmodule Dotenvy.MixProject do
         "assets/logo.png",
         "mix.exs",
         "README*",
-        "cheatsheet.cheatmd",
         "CHANGELOG*",
         "LICENSE*"
       ]

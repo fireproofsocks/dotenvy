@@ -8,7 +8,7 @@ The syntax for accessing values out of a 1Password item is this:
 op://<vault-name>/<item-name>/[section-name/]<field-name>
 ```
 
-Assuming you have the `op` command installed, you can execute system commands in your `.env` files by using the `$()` syntax, available since version 1.0.0 of `Dotenvy`.  For example:
+Assuming you have the `op` command installed, you can execute it and other system commands in your `.env` files by using the `$()` syntax (available since version 1.0.0 of `Dotenvy`).  For example:
 
 ```sh
 DB_PASSWORD=$(op read op://MyVault/FooDatabase/password);
@@ -42,18 +42,17 @@ When it's all put together in your `config/runtime.exs` it should look something
 import Config
 import Dotenvy
 
-env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
+env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/")
 
-{raw_envs, _} = System.shell(~s'bash -c "source #{env_dir_prefix}secrets.sh && env"')
+{raw_envs, _} = System.shell(~s'bash -c "source #{Path.absname("secrets.sh", env_dir_prefix)} && env"')
 {:ok, system_env_vars} = Dotenvy.Parser.parse(raw_envs)
 
 source!([
-  System.get_env(),
-  "#{env_dir_prefix}.env",
-  "#{env_dir_prefix}.#{config_env()}.env",
-  "#{env_dir_prefix}.#{config_env()}.overrides.env",
-  system_env_vars
-])
+    Path.absname(".env", env_dir_prefix),
+    Path.absname(".#{config_env()}.env", env_dir_prefix),
+    Path.absname(".#{config_env()}.overrides.env", env_dir_prefix),
+    system_env_vars
+  ])
 ```
 
 ## See Also
