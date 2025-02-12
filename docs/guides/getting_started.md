@@ -54,7 +54,7 @@ Take a look at the `envs/.test.env` file and see how the variable is declared th
 
 Running `mix test` now passes!
 
-> ## Core Concept: variables are read from an environment-specific file {: .info}
+> ### Core Concept: variables are read from an environment-specific file {: .info}
 >
 > Just like with Elixir's regular config files, `Dotenvy` loads the appropriate
 > env file depending on your environment. Look at how the `config_env()` function
@@ -77,7 +77,7 @@ The answer to this riddle is that `Dotenvy` is read-only: `Dotenvy` does not _se
 > Any variables you declare in your from in your `env` files are _not_ exported
 > back to the system; i.e. `System.put_env/2` is NOT called. In other words,
 > declaring a variable `FOO` in one of your parsed `.env` files does not mean
-> you can use `System.get_env/2` to retrieve it later. This encapsulation is by design!
+> `System.get_env/2` can be used to retrieve it later. This encapsulation is by design!
 > If you want to set environment variables, you must do it explicitly.
 
 ## Establishing a contract
@@ -140,7 +140,7 @@ Understanding type-casting is another core concept in helping to leverage `Doten
 >
 > For each variable you read via `Dotenvy.env!/2` in `config/runtime.exs`, you
 > should consider what the resulting Elixir value needs to be. Can the value be empty? Are
-> `nil` values allowed? Choose the [conversion type](`t:Dotenvy.Transformer.conversion_type/0`) 
+> `nil` values allowed? Choose the [conversion type](`t:Dotenvy.Transformer.conversion_type/0`)
 > that best supplies your app with the value it needs.
 
 See the section on [releases](docs/guides/releases.md) for further information on how `Dotenvy` works in the context of a Mix release.
