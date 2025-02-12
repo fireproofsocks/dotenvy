@@ -89,7 +89,8 @@ defmodule Dotenvy.MixProject do
     %{
       "GitHub" => @source_url,
       "Readme" => "#{@source_url}/blob/v#{@version}/README.md",
-      "Changelog" => "#{@source_url}/blob/v#{@version}/CHANGELOG.md"
+      "Changelog" => "#{@source_url}/blob/v#{@version}/CHANGELOG.md",
+      "Sponsor" => "https://github.com/sponsors/fireproofsocks"
     }
   end
 
