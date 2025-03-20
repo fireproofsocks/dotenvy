@@ -3,6 +3,16 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.1.0
+
+- Adds support for `Dotenvy.Parser.parse/3` options `:sys_cmd_fn` and `:sys_cmd_opts` to
+  allow for greater control over how (or if) any system commands (designated via `$()`)
+  are executed during parsing.
+- Updates dependencies to latest
+- Docs cleanup around `RELEASE_ROOT` so the examples tolerate cases where the path
+  includes or omits a trailing slash. This is important because a bad path there causes
+  all kinds of frustration in a release.
+
 ## v1.0.1
 
 - Minor docs cleanup re Markdown syntax.
