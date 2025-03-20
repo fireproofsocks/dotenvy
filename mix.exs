@@ -110,7 +110,7 @@ defmodule Dotenvy.MixProject do
     [
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
-      {:ex_doc, "~> 0.34", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.37", only: :dev, runtime: false},
       {:excoveralls, "~> 0.18", only: [:dev, :test], runtime: false},
       {:mox, "~> 1.2", only: [:test]}
     ]
