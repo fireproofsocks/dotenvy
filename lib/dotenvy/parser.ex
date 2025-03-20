@@ -8,29 +8,44 @@ defmodule Dotenvy.Parser do
   """
   @behaviour Dotenvy
 
-  # Formalizes parser opts for easier pattern matching when parsing values
+  # Formalizes parser opts for easier pattern matching
   defmodule Opts do
     @moduledoc false
-    # interpolate?: boolean indicating whether the parser is inside double-quotes and
-    #   variables like ${FOO} should be interpolated.
-    # stop_on: indicates the "closing" value the parser shuld look for when accumulating values
-    # key: the key for which the value is being accumulated
+    # - interpolate?: boolean indicating whether the parser is inside a double-quoted
+    #   value where variables like `${FOO}` should be interpolated.
+    # - stop_on: indicates the "closing" value the parser shuld look for when accumulating values
+    # - key: the key for which the value is being accumulated
+    # - sys_cmd_fn: arity 3 function used when processing $()
+    # - sys_cmd_opts: options passed as the 3rd arg to `sys_cmd_fn`
     defstruct interpolate?: true,
               stop_on: nil,
-              key: nil
+              key: nil,
+              sys_cmd_fn: nil,
+              sys_cmd_opts: []
   end
 
   @doc """
   Parse the given `contents`, substituting and merging with the given `vars`.
+
+  ## Options
+
+  - `:sys_cmd_fn` an arity 3 function returning a tuple matching the spec for
+    the [System.cmd/3](https://hexdocs.pm/elixir/System.html#cmd/3) function: the
+    first element is the raw output and the second represents the exit status (0
+    on success). Default: `System.cmd/3`
+  - `:sys_cmd_opts` keyword list of options passed as the 3rd arg to the `:sys_cmd_fn`.
   """
   # The parsing bounces between seeking keys and seeking values.
   @impl true
-  def parse(contents, vars \\ %{}, _opts \\ []) when is_binary(contents) do
-    find_key(contents, "", vars)
+  def parse(contents, vars \\ %{}, opts \\ []) when is_binary(contents) do
+    find_key(contents, "", vars, %Opts{
+      sys_cmd_fn: Keyword.get(opts, :sys_cmd_fn, &System.cmd/3),
+      sys_cmd_opts: Keyword.get(opts, :sys_cmd_opts, [])
+    })
   end
 
   # EOF. Done!
-  defp find_key("", acc, vars) do
+  defp find_key("", acc, vars, _opts) do
     case String.trim(acc) do
       "" -> {:ok, vars}
       _ -> {:error, "Invalid syntax: variable missing value"}
@@ -38,15 +53,15 @@ defmodule Dotenvy.Parser do
   end
 
   # Entering a comment
-  defp find_key(<<?#, tail::binary>>, _acc, vars) do
+  defp find_key(<<?#, tail::binary>>, _acc, vars, opts) do
     tail
     |> fast_forward_to_line_end()
-    |> find_key("", vars)
+    |> find_key("", vars, opts)
   end
 
   # When we hit the equals sign, we look at what we have accumulated
   # to see if it is a valid variable name (i.e. a key).
-  defp find_key(<<?=, tail::binary>>, acc, vars) do
+  defp find_key(<<?=, tail::binary>>, acc, vars, opts) do
     key =
       acc
       |> String.trim_leading("export ")
@@ -54,23 +69,23 @@ defmodule Dotenvy.Parser do
 
     case Regex.match?(~r/(^[a-zA-Z_]+[a-zA-Z0-9_]*$)/, key) do
       true ->
-        find_value(tail, "", vars, %Opts{key: key, stop_on: nil})
+        find_value(tail, "", vars, %Opts{opts | key: key, stop_on: nil})
 
       _ ->
         {:error, "Invalid variable name syntax: #{inspect(acc)}"}
     end
   end
 
-  defp find_key(<<?\n, tail::binary>>, acc, vars) do
+  defp find_key(<<?\n, tail::binary>>, acc, vars, opts) do
     case String.trim(acc) do
-      "" -> find_key(tail, "", vars)
+      "" -> find_key(tail, "", vars, opts)
       _ -> {:error, "Invalid syntax for line. No equals sign for key: #{inspect(acc)}"}
     end
   end
 
   # Shift the char onto the accumulator and keep looking...
-  defp find_key(<<char::utf8, tail::binary>>, acc, vars) do
-    find_key(tail, acc <> <<char>>, vars)
+  defp find_key(<<char::utf8, tail::binary>>, acc, vars, opts) do
+    find_key(tail, acc <> <<char>>, vars, opts)
   end
 
   # Find a value that corresponds with the key...
@@ -80,7 +95,7 @@ defmodule Dotenvy.Parser do
          <<?', ?', ?', tail::binary>>,
          acc,
          %{} = vars,
-         %Opts{key: key, stop_on: nil}
+         %Opts{key: key, stop_on: nil} = opts
        ) do
     case String.trim(acc) do
       "" ->
@@ -89,9 +104,10 @@ defmodule Dotenvy.Parser do
         case String.trim(acc) do
           "" ->
             find_value(tail, "", vars, %Opts{
-              key: key,
-              interpolate?: false,
-              stop_on: <<?', ?', ?'>>
+              opts
+              | key: key,
+                interpolate?: false,
+                stop_on: <<?', ?', ?'>>
             })
 
           _ ->
@@ -109,7 +125,7 @@ defmodule Dotenvy.Parser do
          <<?", ?", ?", tail::binary>>,
          acc,
          %{} = vars,
-         %Opts{key: key, stop_on: nil}
+         %Opts{key: key, stop_on: nil} = opts
        ) do
     case String.trim(acc) do
       "" ->
@@ -118,9 +134,10 @@ defmodule Dotenvy.Parser do
         case String.trim(acc) do
           "" ->
             find_value(tail, "", vars, %Opts{
-              key: key,
-              interpolate?: true,
-              stop_on: <<?", ?", ?">>
+              opts
+              | key: key,
+                interpolate?: true,
+                stop_on: <<?", ?", ?">>
             })
 
           _ ->
@@ -138,13 +155,13 @@ defmodule Dotenvy.Parser do
          <<h::binary-size(3), tail::binary>>,
          acc,
          vars,
-         %Opts{key: key, stop_on: stop}
+         %Opts{key: key, stop_on: stop} = opts
        )
        when h == stop and stop != nil do
     {tail, rest_of_line} = accumulate_rest_of_line(tail, "")
 
     case String.trim(rest_of_line) do
-      "" -> find_key(tail, "", Map.put(vars, key, acc))
+      "" -> find_key(tail, "", Map.put(vars, key, acc), opts)
       _ -> {:error, "Invalid syntax following #{inspect(stop)}: #{inspect(rest_of_line)}"}
     end
   end
@@ -154,11 +171,11 @@ defmodule Dotenvy.Parser do
          <<?", tail::binary>>,
          acc,
          vars,
-         %Opts{key: key, stop_on: nil}
+         %Opts{key: key, stop_on: nil} = opts
        ) do
     case String.trim(acc) do
       "" ->
-        find_value(tail, "", vars, %Opts{key: key, interpolate?: true, stop_on: <<?">>})
+        find_value(tail, "", vars, %Opts{opts | key: key, interpolate?: true, stop_on: <<?">>})
 
       _ ->
         {:error, "Improper syntax before opening quote: #{inspect(acc)}"}
@@ -170,11 +187,11 @@ defmodule Dotenvy.Parser do
          <<?', tail::binary>>,
          acc,
          vars,
-         %Opts{key: key, stop_on: nil}
+         %Opts{key: key, stop_on: nil} = opts
        ) do
     case String.trim(acc) do
       "" ->
-        find_value(tail, "", vars, %Opts{key: key, interpolate?: false, stop_on: <<?'>>})
+        find_value(tail, "", vars, %Opts{opts | key: key, interpolate?: false, stop_on: <<?'>>})
 
       _ ->
         {:error, "Improper syntax before opening quote: #{inspect(acc)}"}
@@ -182,10 +199,10 @@ defmodule Dotenvy.Parser do
   end
 
   # Comment - ignore the rest of the line
-  defp find_value(<<?#, tail::binary>>, acc, vars, %Opts{key: key, stop_on: nil} = _opts) do
+  defp find_value(<<?#, tail::binary>>, acc, vars, %Opts{key: key, stop_on: nil} = opts) do
     tail
     |> fast_forward_to_line_end()
-    |> find_key("", Map.put(vars, key, String.trim(acc)))
+    |> find_key("", Map.put(vars, key, String.trim(acc)), opts)
   end
 
   # End of un-quoted line, EOF
@@ -199,10 +216,10 @@ defmodule Dotenvy.Parser do
          <<?\n, tail::binary>>,
          acc,
          vars,
-         %Opts{key: key, stop_on: nil} = _opts
+         %Opts{key: key, stop_on: nil} = opts
        )
        when key != nil do
-    find_key(tail, "", Map.put(vars, key, String.trim(acc)))
+    find_key(tail, "", Map.put(vars, key, String.trim(acc)), opts)
   end
 
   # Start of variable interpolation e.g. ${FOO}
@@ -217,7 +234,7 @@ defmodule Dotenvy.Parser do
   defp find_value(<<?$, ?(, tail::binary>>, acc, vars, %Opts{interpolate?: true} = opts) do
     with {:ok, inner_value, tail} <- acc_inner_value(tail, "", <<?)>>),
          {:ok, cmd, args} <- parse_cmd_args(inner_value),
-         {:ok, returned_value} <- execute_shell_cmd(cmd, args) do
+         {:ok, returned_value} <- execute_shell_cmd(cmd, args, opts) do
       find_value(tail, acc <> returned_value, vars, opts)
     end
   end
@@ -227,14 +244,14 @@ defmodule Dotenvy.Parser do
          <<h::binary-size(1), tail::binary>>,
          acc,
          vars,
-         %Opts{key: key, stop_on: stop}
+         %Opts{key: key, stop_on: stop} = opts
        )
        when h == stop and stop != nil do
     {tail, rest_of_line} = accumulate_rest_of_line(tail, "")
 
     case String.trim(rest_of_line) do
       "" ->
-        find_key(tail, "", Map.put(vars, key, acc))
+        find_key(tail, "", Map.put(vars, key, acc), opts)
 
       _ ->
         {:error,
@@ -284,8 +301,8 @@ defmodule Dotenvy.Parser do
     end
   end
 
-  defp execute_shell_cmd(cmd, args) do
-    case System.cmd(cmd, args) do
+  defp execute_shell_cmd(cmd, args, %Opts{sys_cmd_fn: sys_cmd_fn, sys_cmd_opts: sys_cmd_opts}) do
+    case sys_cmd_fn.(cmd, args, sys_cmd_opts) do
       {raw_output, 0} ->
         {:ok, String.trim(raw_output)}
 

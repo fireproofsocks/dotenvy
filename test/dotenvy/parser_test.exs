@@ -206,5 +206,12 @@ defmodule Dotenvy.ParserTest do
     test ":error on empty command" do
       assert {:error, _} = P.parse("FOO=$()")
     end
+
+    test ":sys_cmd_fn" do
+      assert {:ok, %{"FOO" => "echo this-is-a-test"}} =
+               P.parse("FOO=$(echo this-is-a-test)", %{},
+                 sys_cmd_fn: fn cmd, args, _opts -> {"#{cmd} #{Enum.join(args)}", 0} end
+               )
+    end
   end
 end

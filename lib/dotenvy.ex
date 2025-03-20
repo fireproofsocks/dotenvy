@@ -175,7 +175,7 @@ defmodule Dotenvy do
 
   ## Options
 
-  - `:parser` module that implements `c:Dotenvy.parse/3` callback. Default: `Dotenvy.Parser`
+  - `:parser` module that implements the `c:Dotenvy.parse/3` callback. Default: `Dotenvy.Parser`
 
   - `:require_files` specifies which of the given `files` (if any) *must* be present.
     When `true`, all the listed files must exist.
@@ -188,6 +188,8 @@ defmodule Dotenvy do
     The default is an internal function that stores the values inside a process dictionary so
     the values are available to the `env!/2` and `env!/3` functions. This option
     is overridable to facilitate testing. Changing it is not recommended.
+
+  All other options are passed through to `Dotenvy.Parser.parse/3`, e.g. `:sys_cmd_fn`.
 
   ## Examples
 
