@@ -8,9 +8,13 @@ defmodule Dotenvy.Parser do
   """
   @behaviour Dotenvy
 
-  # Formalizes parser opts
+  # Formalizes parser opts for easier pattern matching when parsing values
   defmodule Opts do
     @moduledoc false
+    # interpolate?: boolean indicating whether the parser is inside double-quotes and
+    #   variables like ${FOO} should be interpolated.
+    # stop_on: indicates the "closing" value the parser shuld look for when accumulating values
+    # key: the key for which the value is being accumulated
     defstruct interpolate?: true,
               stop_on: nil,
               key: nil
