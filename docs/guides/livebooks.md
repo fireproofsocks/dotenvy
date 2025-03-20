@@ -5,7 +5,7 @@ When running an Elixir application from a [Livebook](https://livebook.dev/), we 
 In order to overcome this problem, it is important to resolve relative paths into absolute paths.  As demonstrated elsewhere, this can be done using `Path.expand/1` and `Path.absname/2`:
 
 ```elixir
-env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/")
+env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs")
 
 source!([
     Path.absname(".env", env_dir_prefix),

@@ -104,3 +104,5 @@ You need to add the output of a shell command in one of your variables? Simply a
     API_KEY=$(op read op://MyVault/SomeService/api_key)
 
 As with interpolated variables, the `$()` syntax only triggers the execution of a shell command when it appears _within double-quotes or in a line without quotes_. If you quote your value with single quotes, the values will remain as-is.
+
+If you need more control over how (or if) commands within the `$()` syntax are executed, the `Dotenvy.Parser.parse/3` function supports 2 options: `:sys_cmd_fn` and `:sys_cmd_opts`. You can leverage these to do things such as perform linting of the `.env` files or disable system commands altogether.

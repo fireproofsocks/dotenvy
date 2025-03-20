@@ -114,7 +114,7 @@ PG_SSL=false
 import Config
 import Dotenvy
 
-env_dir = System.get_env("RELEASE_ROOT") || Path.expand("./envs/")
+env_dir = System.get_env("RELEASE_ROOT") || Path.expand("./envs")
   
 source!([
     Path.absname(".env", dir),

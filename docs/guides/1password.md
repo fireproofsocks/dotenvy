@@ -15,11 +15,13 @@ DB_PASSWORD=$(op read op://MyVault/FooDatabase/password);
 API_KEY=$(op read op://MyVault/ImportantAPI/key);
 ```
 
+See `Dotenvy.Parser.parse/3` for examples on how to customize or restrict the functionality available inside the `$()` blocks.
+
 ## Executing Shell commands prior to version 1.0.0
 
-If you need this functionality in versions of `Dotenvy` prior to version 1.0.0, you must do a bit more footwork and rely on `System.shell/2`.  Use this with caution!
+If you need your variables to be populated with the output of shell commands in versions of `Dotenvy` prior to version 1.0.0, you must do a bit more footwork and rely on `System.shell/2`.  Use this with caution!
 
-If you're unable to upgrade to version 1.0.0 or the shell commands you are attempting to run are not somehow not supported by the `Dotenvy.Parser`, please file a bug! And then try the following.
+If you're unable to upgrade to version 1.0.0 or the shell commands you are attempting to run are somehow not supported by the `Dotenvy.Parser`, please file a bug! And then try the following.
 
 Create a shell script that exports the necessary ENV vars, e.g. `secrets.sh`:
 
@@ -42,7 +44,7 @@ When it's all put together in your `config/runtime.exs` it should look something
 import Config
 import Dotenvy
 
-env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/")
+env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs")
 
 {raw_envs, _} = System.shell(~s'bash -c "source #{Path.absname("secrets.sh", env_dir_prefix)} && env"')
 {:ok, system_env_vars} = Dotenvy.Parser.parse(raw_envs)

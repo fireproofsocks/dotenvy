@@ -183,7 +183,7 @@ import Dotenvy
 
 # For local development, read dotenv files inside the envs/ dir;
 # for releases, read them at the RELEASE_ROOT
-env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/")
+env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs")
 
 source!([
     Path.absname(".env", env_dir_prefix),
@@ -193,13 +193,12 @@ source!([
 ])
 ```
 
-Or more succinctly:
+> ### Beware Trailing Slashes {: .warning}
+>
+> Always us the `Path.absname/2` function so the prefix is properly applied and you don't end up with
+> bad paths because of a missing trailing slash!
 
-```elixir
-config_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/") <> "/"
-```
-
-Remember that is safer to use an absolute path. This is especially important when working with umbrella apps or Livebooks.
+Remember that is safer to use an absolute path. This is especially important when working with umbrella apps or Livebooks!
 
 ## Umbrella Apps
 
@@ -208,7 +207,7 @@ Elixir [Umbrella Projects](https://elixir-lang.org/getting-started/mix-otp/depen
 In particular, you have to be very careful about relative paths when working in an umbrella project. Depending on what you're doing, the path may be _relative to a single application_ instead of relative to the root of the repository. As elsewhere, using `Path.expand/1` is a good way to anchor your `config/runtime.exs` to point to the root of the repository instead of it resolving to the root of a specific application within the umbrella. E.g.
 
 ```elixir
-env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/")
+env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs")
 
 source!([
     Path.absname(".env", env_dir_prefix),

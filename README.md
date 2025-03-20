@@ -28,14 +28,14 @@ It has no dependencies.
 of the most effective places to do that is inside `config/runtime.exs` (available
 since Elixir v1.11).
 
-The `Dotenvy.source/2` function can accept a single file or a list of files.  When combined with `Config.config_env/0` it is easy to load up environment-specifc config. A common setup in your `config/runtime.exs` would include a block like the following:
+The `Dotenvy.source/2` function can accept a single file or a list of files.  When combined with `Config.config_env/0` it is easy to load up environment-specific config. A common setup in your `config/runtime.exs` would include a block like the following:
 
 ```elixir
 # config/runtime.exs
 import Config
 import Dotenvy
 
-env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/")
+env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs")
 
 source!([
   Path.absname(".env", env_dir_prefix),
@@ -60,7 +60,7 @@ For a simple example, we can load up a `.env` file containing all defaults and a
 import Config
 import Dotenvy
 
-env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs/")
+env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs")
 
 source!([
   Path.absname(".env", env_dir_prefix), 
