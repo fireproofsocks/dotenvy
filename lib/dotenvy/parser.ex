@@ -75,7 +75,7 @@ defmodule Dotenvy.Parser do
 
   # When we hit the equals sign, we look at what we have accumulated
   # to see if it is a valid variable name (i.e. a key).
-  defp find_key(<<?=, tail::binary>>, acc, vars, opts) do
+  defp find_key(<<?=, tail::binary>>, acc, vars, %Opts{} = opts) do
     key =
       acc
       |> String.trim_leading("export ")
@@ -83,7 +83,7 @@ defmodule Dotenvy.Parser do
 
     case Regex.match?(~r/(^[a-zA-Z_]+[a-zA-Z0-9_]*$)/, key) do
       true ->
-        find_value(tail, "", vars, %Opts{opts | key: key, stop_on: nil})
+        find_value(tail, "", vars, %{opts | key: key, stop_on: nil})
 
       _ ->
         {:error, "Invalid variable name syntax: #{inspect(acc)}"}
@@ -117,7 +117,7 @@ defmodule Dotenvy.Parser do
 
         case String.trim(acc) do
           "" ->
-            find_value(tail, "", vars, %Opts{
+            find_value(tail, "", vars, %{
               opts
               | key: key,
                 interpolate?: false,
@@ -147,7 +147,7 @@ defmodule Dotenvy.Parser do
 
         case String.trim(acc) do
           "" ->
-            find_value(tail, "", vars, %Opts{
+            find_value(tail, "", vars, %{
               opts
               | key: key,
                 interpolate?: true,
@@ -189,7 +189,7 @@ defmodule Dotenvy.Parser do
        ) do
     case String.trim(acc) do
       "" ->
-        find_value(tail, "", vars, %Opts{opts | key: key, interpolate?: true, stop_on: <<?">>})
+        find_value(tail, "", vars, %{opts | key: key, interpolate?: true, stop_on: <<?">>})
 
       _ ->
         {:error, "Improper syntax before opening quote: #{inspect(acc)}"}
@@ -205,7 +205,7 @@ defmodule Dotenvy.Parser do
        ) do
     case String.trim(acc) do
       "" ->
-        find_value(tail, "", vars, %Opts{opts | key: key, interpolate?: false, stop_on: <<?'>>})
+        find_value(tail, "", vars, %{opts | key: key, interpolate?: false, stop_on: <<?'>>})
 
       _ ->
         {:error, "Improper syntax before opening quote: #{inspect(acc)}"}
