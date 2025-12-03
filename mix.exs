@@ -17,7 +17,6 @@ defmodule Dotenvy.MixProject do
       package: package(),
       elixirc_paths: elixirc_paths(Mix.env()),
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [coveralls: :test, "coveralls.detail": :test],
       build_per_environment: false,
       docs: [
         main: "readme",
@@ -56,6 +55,10 @@ defmodule Dotenvy.MixProject do
       Cheatsheets: ~r/guides\/cheatsheets\/.?/,
       "Extra Info": ~r/reference\/[^\/]+\.md/
     ]
+  end
+
+  def cli do
+    [preferred_envs: [coveralls: :test, "coveralls.detail": :test]]
   end
 
   defp description do

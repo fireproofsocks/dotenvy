@@ -83,7 +83,7 @@ defmodule Dotenvy.Parser do
 
     case Regex.match?(~r/(^[a-zA-Z_]+[a-zA-Z0-9_]*$)/, key) do
       true ->
-        find_value(tail, "", vars, %{opts | key: key, stop_on: nil})
+        find_value(tail, "", vars, %Opts{opts | key: key, stop_on: nil})
 
       _ ->
         {:error, "Invalid variable name syntax: #{inspect(acc)}"}
@@ -117,7 +117,7 @@ defmodule Dotenvy.Parser do
 
         case String.trim(acc) do
           "" ->
-            find_value(tail, "", vars, %{
+            find_value(tail, "", vars, %Opts{
               opts
               | key: key,
                 interpolate?: false,
@@ -147,7 +147,7 @@ defmodule Dotenvy.Parser do
 
         case String.trim(acc) do
           "" ->
-            find_value(tail, "", vars, %{
+            find_value(tail, "", vars, %Opts{
               opts
               | key: key,
                 interpolate?: true,
@@ -189,7 +189,7 @@ defmodule Dotenvy.Parser do
        ) do
     case String.trim(acc) do
       "" ->
-        find_value(tail, "", vars, %{opts | key: key, interpolate?: true, stop_on: <<?">>})
+        find_value(tail, "", vars, %Opts{opts | key: key, interpolate?: true, stop_on: <<?">>})
 
       _ ->
         {:error, "Improper syntax before opening quote: #{inspect(acc)}"}
@@ -205,7 +205,7 @@ defmodule Dotenvy.Parser do
        ) do
     case String.trim(acc) do
       "" ->
-        find_value(tail, "", vars, %{opts | key: key, interpolate?: false, stop_on: <<?'>>})
+        find_value(tail, "", vars, %Opts{opts | key: key, interpolate?: false, stop_on: <<?'>>})
 
       _ ->
         {:error, "Improper syntax before opening quote: #{inspect(acc)}"}
@@ -296,7 +296,7 @@ defmodule Dotenvy.Parser do
     end
   end
 
-  defp find_value("", _acc, _vars, %Opts{key: key, stop_on: stop} = _opts)
+  defp find_value("", _acc, _vars, %Opts{key: key, stop_on: stop})
        when key != nil and stop != nil do
     {:error,
      "Could not parse value for #{inspect(key)}. Stop sequence not found: #{inspect(stop)}"}
