@@ -56,8 +56,8 @@ defmodule DotenvyTest do
       System.put_env("TEST_VALUE", "#{test}")
       source([System.get_env()])
 
-      assert_raise FunctionClauseError, fn ->
-        env!("TEST_VALUE", fn _ -> Keyword.get(%{}, :foo) end, "default")
+      assert_raise ArgumentError, "boom", fn ->
+        env!("TEST_VALUE", fn _ -> raise ArgumentError, "boom" end, "default")
       end
     end
   end
@@ -99,8 +99,8 @@ defmodule DotenvyTest do
       System.put_env("TEST_VALUE", "#{test}")
       source([System.get_env()])
 
-      assert_raise FunctionClauseError, fn ->
-        env!("TEST_VALUE", fn _ -> Keyword.get(%{}, :foo) end)
+      assert_raise ArgumentError, "boom", fn ->
+        env!("TEST_VALUE", fn _ -> raise ArgumentError, "boom" end)
       end
     end
   end
