@@ -17,7 +17,6 @@ defmodule Dotenvy do
 
   alias Dotenvy.Transformer.Error
 
-  require Logger
 
   @typedoc """
   An input source may be either a path to an env file or a map with string keys
