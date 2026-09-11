@@ -6,7 +6,7 @@ This page shows you how to either generate a new Phoenix application using the [
 
 Make sure you have installed the [`dotenvy_generators`](docs/reference/generators.md) before continuing!
 
-In a new terminal window, you can run the new task to generate a new Phoenix app, e.g. `mix phx.new.dotenvy hello`.  This should generate a functional Phoenix application that leverages `Dotenvy` for its configuration.
+In a new terminal window, you can run the new task to generate a new Phoenix app, e.g. `mix phx.new hello`.  This should generate a functional Phoenix application that leverages `Dotenvy` for its configuration.
 
 Have a look over the file structure: notice the `envs/` directory.  The files there house the values read at _runtime_, whereas the various config files inside of `config/` have been cleaned up so they focus on providing settings that must be defined at compile-time.
 
