@@ -29,9 +29,18 @@ defmodule Dotenvy.Transformer do
   - `:integer?` - as above, but an empty string will be considered `nil`.
   - `:integer!` - as above, but an empty string will raise.
 
-  - `:float` - converts a string to an float. An empty string will be considered `0`.
+  - `:float` - converts a string to an float. An empty string will be considered `0.0`.
   - `:float?` - as above, but an empty string will be considered `nil`.
   - `:float!` - as above, but an empty string will raise.
+
+  - `:ip?` - converts to an IPv4 or IPv6 address tuple. An empty string will be considered `nil`.
+  - `:ip!` - as above, but an empty string will raise.
+
+  - `:ipv4?` - converts to an IPv4 address tuple. An empty string will be considered `nil`.
+  - `:ipv4!` - as above, but an empty string will raise.
+
+  - `:ipv6?` - converts to an IPv6 address tuple. An empty string will be considered `nil`.
+  - `:ipv6!` - as above, but an empty string will raise.
 
   - `:existing_atom` - converts into an existing atom. Raises error if the atom does not exist.
   - `:existing_atom?` - as above, but an empty string will be considered `nil`.
@@ -45,6 +54,10 @@ defmodule Dotenvy.Transformer do
   - `:string?` - empty strings will be considered `nil`.
   - `:string!` - as above, but an empty string will raise.
   - custom function - see below.
+
+  Most types come in three variants, but the IP address types have no suffix-less
+  variant: no safe value can be inferred from an empty string, and `{0, 0, 0, 0}`
+  (i.e. all interfaces) would be a dangerous thing to infer.
 
   ## Custom Callback function
 
@@ -68,6 +81,12 @@ defmodule Dotenvy.Transformer do
           | :float
           | :float?
           | :float!
+          | :ip?
+          | :ip!
+          | :ipv4?
+          | :ipv4!
+          | :ipv6?
+          | :ipv6!
           | :existing_atom
           | :existing_atom?
           | :existing_atom!
@@ -162,7 +181,7 @@ defmodule Dotenvy.Transformer do
   def to!("", :existing_atom!), do: raise(Error)
   def to!(str, :existing_atom!), do: to!(str, :existing_atom)
 
-  def to!("", :float), do: 0
+  def to!("", :float), do: 0.0
 
   def to!(str, :float) when is_binary(str) do
     case Float.parse(str) do
@@ -196,6 +215,36 @@ defmodule Dotenvy.Transformer do
   def to!("", :integer!), do: raise(Error)
   def to!(str, :integer!), do: to!(str, :integer)
 
+  def to!("", :ip?), do: nil
+
+  def to!(str, :ip?) when is_binary(str),
+    do: parse_ip(str, &:inet.parse_strict_address/1, "IP address")
+
+  def to!("", :ip!), do: raise(Error)
+
+  def to!(str, :ip!) when is_binary(str),
+    do: parse_ip(str, &:inet.parse_strict_address/1, "IP address")
+
+  def to!("", :ipv4?), do: nil
+
+  def to!(str, :ipv4?) when is_binary(str),
+    do: parse_ip(str, &:inet.parse_ipv4strict_address/1, "IPv4 address")
+
+  def to!("", :ipv4!), do: raise(Error)
+
+  def to!(str, :ipv4!) when is_binary(str),
+    do: parse_ip(str, &:inet.parse_ipv4strict_address/1, "IPv4 address")
+
+  def to!("", :ipv6?), do: nil
+
+  def to!(str, :ipv6?) when is_binary(str),
+    do: parse_ip(str, &:inet.parse_ipv6strict_address/1, "IPv6 address")
+
+  def to!("", :ipv6!), do: raise(Error)
+
+  def to!(str, :ipv6!) when is_binary(str),
+    do: parse_ip(str, &:inet.parse_ipv6strict_address/1, "IPv6 address")
+
   def to!(str, :module) when is_binary(str) do
     "Elixir.#{str}"
     |> String.to_existing_atom()
@@ -218,4 +267,11 @@ defmodule Dotenvy.Transformer do
 
   def to!(str, _) when not is_binary(str), do: raise(Error, "Input must be a string.")
   def to!(_, type), do: raise(Error, "Unknown type #{inspect(type)}")
+
+  defp parse_ip(str, parser, label) do
+    case parser.(String.to_charlist(str)) do
+      {:ok, address} -> address
+      {:error, :einval} -> raise(Error, "Unparsable as #{label}")
+    end
+  end
 end

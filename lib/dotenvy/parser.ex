@@ -17,6 +17,14 @@ defmodule Dotenvy.Parser do
     # - key: the key for which the value is being accumulated
     # - sys_cmd_fn: arity 3 function used when processing $()
     # - sys_cmd_opts: options passed as the 3rd arg to `sys_cmd_fn`
+    @type t :: %__MODULE__{
+            interpolate?: boolean(),
+            stop_on: binary() | nil,
+            key: binary() | nil,
+            sys_cmd_fn: (binary(), [binary()], keyword() -> {binary(), non_neg_integer()}) | nil,
+            sys_cmd_opts: keyword()
+          }
+
     defstruct interpolate?: true,
               stop_on: nil,
               key: nil,
@@ -104,7 +112,7 @@ defmodule Dotenvy.Parser do
 
   # Find a value that corresponds with the key...
   # ''' heredoc opening
-  @spec find_value(str :: binary(), acc :: binary(), vars :: map(), opts :: %Opts{}) :: any()
+  @spec find_value(str :: binary(), acc :: binary(), vars :: map(), opts :: Opts.t()) :: any()
   defp find_value(
          <<?', ?', ?', tail::binary>>,
          acc,

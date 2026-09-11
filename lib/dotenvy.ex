@@ -17,7 +17,6 @@ defmodule Dotenvy do
 
   alias Dotenvy.Transformer.Error
 
-
   @typedoc """
   An input source may be either a path to an env file or a map with string keys
   and values, e.g. `"envs/.env"` or `%{"FOO" => "bar"}`. This allows users to

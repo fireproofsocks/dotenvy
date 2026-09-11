@@ -143,7 +143,7 @@ defmodule Dotenvy.TransformerTest do
     end
 
     test "empty string to zero" do
-      assert 0 = T.to!("", :float)
+      assert 0.0 === T.to!("", :float)
     end
 
     test "raises on unparsable" do
@@ -217,6 +217,119 @@ defmodule Dotenvy.TransformerTest do
     end
   end
 
+  describe "to!/2 :ip?" do
+    test "converts IPv4" do
+      assert {127, 0, 0, 1} === T.to!("127.0.0.1", :ip?)
+    end
+
+    test "converts IPv6" do
+      assert {8193, 3512, 0, 0, 0, 0, 0, 1} === T.to!("2001:db8::1", :ip?)
+    end
+
+    test "empty string to nil" do
+      assert nil == T.to!("", :ip?)
+    end
+
+    test "raises on unparsable" do
+      assert_raise Dotenvy.Error, fn ->
+        T.to!("nonsense", :ip?)
+      end
+    end
+  end
+
+  describe "to!/2 :ip!" do
+    test "converts IPv4" do
+      assert {127, 0, 0, 1} === T.to!("127.0.0.1", :ip!)
+    end
+
+    test "converts IPv6" do
+      assert {8193, 3512, 0, 0, 0, 0, 0, 1} === T.to!("2001:db8::1", :ip!)
+    end
+
+    test "empty string raises" do
+      assert_raise Dotenvy.Error, fn ->
+        T.to!("", :ip!)
+      end
+    end
+
+    test "rejects abbreviated IPv4 forms" do
+      assert_raise Dotenvy.Error, fn ->
+        T.to!("127.1", :ip!)
+      end
+    end
+  end
+
+  describe "to!/2 :ipv4?" do
+    test "convert" do
+      assert {127, 0, 0, 1} === T.to!("127.0.0.1", :ipv4?)
+    end
+
+    test "empty string to nil" do
+      assert nil == T.to!("", :ipv4?)
+    end
+
+    test "rejects IPv6" do
+      assert_raise Dotenvy.Error, fn ->
+        T.to!("2001:db8::1", :ipv4?)
+      end
+    end
+  end
+
+  describe "to!/2 :ipv4!" do
+    test "convert" do
+      assert {0, 0, 0, 0} === T.to!("0.0.0.0", :ipv4!)
+    end
+
+    test "empty string raises" do
+      assert_raise Dotenvy.Error, fn ->
+        T.to!("", :ipv4!)
+      end
+    end
+
+    test "rejects abbreviated forms" do
+      assert_raise Dotenvy.Error, fn ->
+        T.to!("127.1", :ipv4!)
+      end
+
+      assert_raise Dotenvy.Error, fn ->
+        T.to!("0x7f.1", :ipv4!)
+      end
+    end
+  end
+
+  describe "to!/2 :ipv6?" do
+    test "convert" do
+      assert {8193, 3512, 0, 0, 0, 0, 0, 1} === T.to!("2001:db8::1", :ipv6?)
+    end
+
+    test "long and short forms agree" do
+      assert T.to!("2001:0db8:0000:0000:0000:0000:0000:0001", :ipv6?) ===
+               T.to!("2001:db8::1", :ipv6?)
+    end
+
+    test "empty string to nil" do
+      assert nil == T.to!("", :ipv6?)
+    end
+
+    test "rejects IPv4" do
+      assert_raise Dotenvy.Error, fn ->
+        T.to!("127.0.0.1", :ipv6?)
+      end
+    end
+  end
+
+  describe "to!/2 :ipv6!" do
+    test "convert" do
+      assert {0, 0, 0, 0, 0, 0, 0, 1} === T.to!("::1", :ipv6!)
+    end
+
+    test "empty string raises" do
+      assert_raise Dotenvy.Error, fn ->
+        T.to!("", :ipv6!)
+      end
+    end
+  end
+
   describe "to!/2 :module" do
     test "conversion" do
       assert Dotenvy.TransformerTest == T.to!("Dotenvy.TransformerTest", :module)
@@ -280,6 +393,16 @@ defmodule Dotenvy.TransformerTest do
   describe "to!/2 custom callback function" do
     test "do custom modification" do
       assert "foobar" == T.to!("foo", fn val -> "#{val}bar" end)
+    end
+  end
+
+  describe "to!/2 IP types have no suffix-less variant" do
+    test "bare types are unknown" do
+      for type <- [:ip, :ipv4, :ipv6] do
+        assert_raise Dotenvy.Error, fn ->
+          T.to!("127.0.0.1", type)
+        end
+      end
     end
   end
 
