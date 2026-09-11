@@ -196,14 +196,6 @@ config :phoenix, :plug_init_mode, env!("PHX_PLUG_INIT_MODE", :existing_atom!)
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
-ip =
-  env!("HTTP_INTERFACE", fn val ->
-    case :inet.parse_address(String.to_charlist(val)) do
-      {:ok, addr} -> addr
-      {:error, _} -> raise Dotenvy.Error, message: "invalid IP address: #{inspect(val)}"
-    end
-  end)
-
 ecto_socket_options = if env!("ECTO_IPV6", :boolean!), do: [:inet6], else: []
 
 config :your_app, YourApp.Repo,
@@ -223,7 +215,7 @@ end
 config :your_app, YourAppWeb.Endpoint,
   cache_static_manifest: env!("PHX_CACHE_STATIC_MANIFEST", :string?),
   check_origin: env!("HTTP_CHECK_ORIGIN", :boolean),
-  http: [ip: ip, port: env!("PORT", :integer!)],
+  http: [ip: env!("HTTP_INTERFACE", :ip!), port: env!("PORT", :integer!)],
   secret_key_base: env!("SECRET_KEY_BASE", :string!),
   # Used to build URLs
   url: [
@@ -339,8 +331,11 @@ DNS_CLUSTER_QUERY=
 # To bind to loopback IPv4 address & prevent access from other machines: `127.0.0.1`
 # To allow access from other machines: `0.0.0.0`
 #
-# To enable IPv6 and bind on all interfaces: `0:0:0:0:0:0:0:0`
-# For local network only access: `0:0:0:0:0:0:0:1`
+# To enable IPv6 and bind on all interfaces: `0:0:0:0:0:0:0:0` (or `::`)
+# For local network only access: `0:0:0:0:0:0:0:1` (or `::1`)
+#
+# The `:ip!` type accepts compressed IPv6 forms, but rejects abbreviated IPv4
+# forms such as `127.1`, so write all four octets. A blank value raises.
 #
 # See the documentation on https://hexdocs.pm/bandit/Bandit.html#t:options/0
 # for details about using IPv6 vs IPv4 and loopback vs public addresses.

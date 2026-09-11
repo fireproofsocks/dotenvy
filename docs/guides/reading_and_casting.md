@@ -17,13 +17,14 @@ See the [Releases](docs/guides/releases.md) document for a thorough example of h
 > - a `?` suffix on the type arg turns an empty string into a `nil`
 > - a `!` suffix on the type arg causes an empty string to raise an exception
 > - no special suffix causes an empty string to be cast to a "sensible" value, e.g. `0` for integer or `false` for boolean.
+> - most types offer all 3 variants, but the IP address types do not: there is no safe or sensible value to infer from an empty string
 > - `env!/3` returns its third argument if the given env var is not declared
 
 ## Strings
 
 Given the following env vars:
 
-```shell
+```env
 HOST=localhost
 BLANK=
 ```
@@ -60,7 +61,7 @@ env!("BLANK", :string, "fallback")
 
 Given the following env vars:
 
-```shell
+```env
 PORT=5432
 TIMEOUT=12abc
 RATIO=1.5
@@ -105,7 +106,7 @@ env!("BLANK", :integer, 5432)
 
 Given the following env vars:
 
-```shell
+```env
 RATE=1.5
 WHOLE=5
 MESSY=1.5abc
@@ -147,7 +148,7 @@ env!("NOT_SET", :float, 1.0)
 
 Given the following env vars:
 
-```shell
+```env
 DEBUG=true
 VERBOSE=FALSE
 ZERO=0
@@ -193,7 +194,7 @@ env!("NOT_SET", :boolean, true)
 
 Given the following env vars:
 
-```shell
+```env
 LOG_LEVEL=debug
 PREFIXED=:debug
 BLANK=
@@ -231,7 +232,7 @@ Elixir best practices warn against declaring atoms at runtime because the BEAM d
 
 Given the following env vars:
 
-```shell
+```env
 LOG_LEVEL=debug
 MYSTERY=nope_xyz
 BLANK=
@@ -264,7 +265,7 @@ the atom table from untrusted input.
 
 Given the following env vars:
 
-```shell
+```env
 ADAPTER=DateTime
 FULL=Elixir.DateTime
 BLANK=
@@ -308,7 +309,7 @@ env!("BLANK", :module!)
 
 Given the following env vars:
 
-```shell
+```env
 HOST=localhost
 BLANK=
 ```
@@ -329,11 +330,71 @@ env!("BLANK", :charlist!)
 # ** (RuntimeError) Error converting variable BLANK to charlist!: non-empty value required
 ```
 
+## IP Addresses
+
+Given the following env vars:
+
+```env
+HTTP_INTERFACE=0.0.0.0
+DNS_SERVER=2001:db8::1
+LOOPBACK=::1
+SHORTHAND=127.1
+BLANK=
+```
+
+Then:
+
+```elixir
+env!("HTTP_INTERFACE", :ipv4!)
+# => {0, 0, 0, 0}
+
+env!("DNS_SERVER", :ipv6!)
+# => {8193, 3512, 0, 0, 0, 0, 0, 1}
+
+# :ip! and :ip? accept either family
+env!("LOOPBACK", :ip!)
+# => {0, 0, 0, 0, 0, 0, 0, 1}
+
+env!("HTTP_INTERFACE", :ip?)
+# => {0, 0, 0, 0}
+
+# The family-specific types reject the other family
+env!("DNS_SERVER", :ipv4!)
+# ** (RuntimeError) Error converting variable DNS_SERVER to ipv4!: Unparsable as IPv4 address
+
+# Surprise! Abbreviated IPv4 forms are rejected. Write all four octets.
+env!("SHORTHAND", :ipv4!)
+# ** (RuntimeError) Error converting variable SHORTHAND to ipv4!: Unparsable as IPv4 address
+
+env!("BLANK", :ip?)
+# => nil
+
+env!("BLANK", :ip!)
+# ** (RuntimeError) Error converting variable BLANK to ip!: non-empty value required
+
+env!("NOT_SET", :ip?, {127, 0, 0, 1})
+# => {127, 0, 0, 1}
+
+# Surprise! There is no suffix-less variant
+env!("HTTP_INTERFACE", :ipv4)
+# ** (RuntimeError) Error converting variable HTTP_INTERFACE to ipv4: Unknown type :ipv4
+```
+
+IPv6 accepts both the long form and the compressed form, and the two produce the
+same tuple: `2001:0db8:0000:0000:0000:0000:0000:0001` and `2001:db8::1` both cast
+to `{8193, 3512, 0, 0, 0, 0, 0, 1}`.
+
+> ## No plain variant {: .info}
+>
+> Unlike other type-casts, there is no plain variant like `:ipv4` or `:ipv6`: you must supply a suffix
+> like `:ipv4?` or `:ipv6!`. This is because it's difficult to conjure up a believable value out of an
+> empty string AND it could be dangerous, e.g. to listening to every interface.
+
 ## Custom Functions
 
 Pass an arity 1 function in place of a type atom. Given the following env vars:
 
-```shell
+```env
 HOST=localhost
 PORT=5432
 ```

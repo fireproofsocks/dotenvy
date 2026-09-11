@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bumps deps to latest
 - Removes extraneous `require Logger`
 - Adds the "Reading & Casting Values" guide with examples for every conversion type.
+- Adds IP address conversion types: `:ip?`, `:ip!`, `:ipv4?`, `:ipv4!`, `:ipv6?`, and
+  `:ipv6!`. These parse only; they never resolve hostnames. Unlike other types they
+  have no suffix-less variant, because no safe value can be inferred from an empty
+  string. Abbreviated IPv4 forms such as `127.1` are rejected.
+- Updates the Phoenix guide to use `:ip!` for `HTTP_INTERFACE`, replacing the
+  hand-rolled parser in its `runtime.exs`.
 
 ## v1.1.1
 
