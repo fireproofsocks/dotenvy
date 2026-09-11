@@ -5,9 +5,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v1.2.0
 
+- Breaking Change: casting an empty string to a `:float` now properly returns `0.0` (not `0`)
 - Fixes compiler/credo warnings in Elixir 1.20
 - Bumps deps to latest
 - Removes extraneous `require Logger`
+- Adds the "Reading & Casting Values" guide with examples for every conversion type.
 
 ## v1.1.1
 

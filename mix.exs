@@ -34,6 +34,7 @@ defmodule Dotenvy.MixProject do
     [
       "README.md",
       "docs/guides/getting_started.md",
+      "docs/guides/reading_and_casting.md",
       "docs/guides/releases.md",
       "docs/guides/phoenix.md",
       "docs/guides/minimal.md",

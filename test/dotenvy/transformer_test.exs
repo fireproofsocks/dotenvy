@@ -143,7 +143,7 @@ defmodule Dotenvy.TransformerTest do
     end
 
     test "empty string to zero" do
-      assert 0 = T.to!("", :float)
+      assert 0.0 === T.to!("", :float)
     end
 
     test "raises on unparsable" do

@@ -29,7 +29,7 @@ defmodule Dotenvy.Transformer do
   - `:integer?` - as above, but an empty string will be considered `nil`.
   - `:integer!` - as above, but an empty string will raise.
 
-  - `:float` - converts a string to an float. An empty string will be considered `0`.
+  - `:float` - converts a string to an float. An empty string will be considered `0.0`.
   - `:float?` - as above, but an empty string will be considered `nil`.
   - `:float!` - as above, but an empty string will raise.
 
@@ -162,7 +162,7 @@ defmodule Dotenvy.Transformer do
   def to!("", :existing_atom!), do: raise(Error)
   def to!(str, :existing_atom!), do: to!(str, :existing_atom)
 
-  def to!("", :float), do: 0
+  def to!("", :float), do: 0.0
 
   def to!(str, :float) when is_binary(str) do
     case Float.parse(str) do
