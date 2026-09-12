@@ -83,6 +83,47 @@ defmodule Dotenvy.ParserTest do
     test "error on incomplete unicode" do
       assert {:error, _} = P.parse("FOO=\\uAB")
     end
+
+    test ":ok drops backslash for unrecognized escape char" do
+      assert {:ok, %{"FOO" => "п"}} == P.parse("FOO=\\п")
+    end
+  end
+
+  describe "parse/3 unicode (non-ASCII) values" do
+    @tag env_file: "unicode-unquoted.env"
+    test ":ok unquoted", %{contents: contents} do
+      assert {:ok, %{"A" => "Привет мир"}} == P.parse(contents)
+    end
+
+    @tag env_file: "unicode-double-quoted.env"
+    test ":ok double-quoted", %{contents: contents} do
+      assert {:ok, %{"A" => "Привет мир"}} == P.parse(contents)
+    end
+
+    @tag env_file: "unicode-single-quoted.env"
+    test ":ok single-quoted", %{contents: contents} do
+      assert {:ok, %{"A" => "Привет мир"}} == P.parse(contents)
+    end
+
+    test ":ok around interpolated value" do
+      assert {:ok, %{"A" => "мир", "B" => "пока мир!"}} ==
+               P.parse("B=пока ${A}!", %{"A" => "мир"})
+    end
+
+    @tag env_file: "unicode-trailing-comment.env"
+    test ":ok before a trailing comment", %{contents: contents} do
+      assert {:ok, %{"A" => "Привет"}} == P.parse(contents)
+    end
+
+    @tag env_file: "unicode-heredoc.env"
+    test ":ok inside a heredoc", %{contents: contents} do
+      assert {:ok, %{"A" => "Привет мир\n"}} == P.parse(contents)
+    end
+
+    @tag env_file: "unicode-emoji.env"
+    test ":ok emoji", %{contents: contents} do
+      assert {:ok, %{"A" => "Привет 👋 мир"}} == P.parse(contents)
+    end
   end
 
   describe "parse/3 single-quotes" do

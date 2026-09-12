@@ -107,7 +107,7 @@ defmodule Dotenvy.Parser do
 
   # Shift the char onto the accumulator and keep looking...
   defp find_key(<<char::utf8, tail::binary>>, acc, vars, opts) do
-    find_key(tail, acc <> <<char>>, vars, opts)
+    find_key(tail, acc <> <<char::utf8>>, vars, opts)
   end
 
   # Find a value that corresponds with the key...
@@ -312,7 +312,7 @@ defmodule Dotenvy.Parser do
 
   # accumulate the char as part of the value and keep going...
   defp find_value(<<char::utf8, tail::binary>>, acc, vars, opts) do
-    find_value(tail, acc <> <<char>>, vars, opts)
+    find_value(tail, acc <> <<char::utf8>>, vars, opts)
   end
 
   # Parses text into a command and args
@@ -343,7 +343,7 @@ defmodule Dotenvy.Parser do
 
   defp acc_inner_value(<<char::utf8, tail::binary>>, acc, stop) do
     # accumulate the char and keep going...
-    acc_inner_value(tail, acc <> <<char>>, stop)
+    acc_inner_value(tail, acc <> <<char::utf8>>, stop)
   end
 
   defp acc_inner_value("", _acc, stop) do
@@ -359,7 +359,7 @@ defmodule Dotenvy.Parser do
   end
 
   defp accumulate_rest_of_line(<<char::utf8, tail::binary>>, acc) do
-    accumulate_rest_of_line(tail, acc <> <<char>>)
+    accumulate_rest_of_line(tail, acc <> <<char::utf8>>)
   end
 
   defp do_unicode(<<hex_chars::binary-size(4), tail::binary>>, acc, vars, %Opts{key: key} = opts) do
