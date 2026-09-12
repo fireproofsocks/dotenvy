@@ -3,6 +3,13 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.2.1
+
+- Fixes parsing of non-ASCII values: any value containing a character above the
+  ASCII range (including accented Latin text like `café`) was silently truncated
+  to invalid UTF-8. Thanks to [nunsez](https://github.com/nunsez).
+- Minor improvements to docs formatting and cross-links
+
 ## v1.2.0
 
 - Breaking Change: casting an empty string to a `:float` now properly returns `0.0` (not `0`)

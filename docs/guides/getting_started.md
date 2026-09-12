@@ -136,11 +136,14 @@ Now the application starts fine, even if the `PASSWORD` value is empty. Probably
 
 Understanding type-casting is another core concept in helping to leverage `Dotenvy` so  your app get what it needs to run.
 
+See [Reading & Casting](docs/guides/reading_and_casting.md) for more examples.
+
 > ### Core Concept: type-casting {: .info}
 >
 > For each variable you read via `Dotenvy.env!/2` in `config/runtime.exs`, you
 > should consider what the resulting Elixir value needs to be. Can the value be empty? Are
 > `nil` values allowed? Choose the [conversion type](`t:Dotenvy.Transformer.conversion_type/0`)
-> that best supplies your app with the value it needs.
+> that best supplies your app with the value it needs. See [Reading & Casting](docs/guides/reading_and_casting.md)
+> for more discussion and examples.
 
 See the section on [releases](docs/guides/releases.md) for further information on how `Dotenvy` works in the context of a Mix release.
