@@ -4,6 +4,9 @@ defmodule Dotenvy.Transformer do
 
   These conversions were designed to operate on system environment variables, which
   _always_ store string binaries.
+
+  See [Reading & Casting](docs/guides/reading_and_casting.md) for examples of how the transformer
+  affects your variables.
   """
   alias Dotenvy.Error
 
@@ -64,6 +67,7 @@ defmodule Dotenvy.Transformer do
   When you require more control over the transformation of your value than is possible
   with the types provided, you can provide an arity 1 function in place of the type.
 
+  See [Reading & Casting](docs/guides/reading_and_casting.md) for more examples.
   """
   @type conversion_type ::
           :atom

@@ -11,7 +11,7 @@ source!(["envs/.#{config_env()}.env", System.get_env()])
 
 See the [Releases](docs/guides/releases.md) document for a thorough example of how to properly load up environment-specific files both for local development and in the context of a built & deployed release.
 
-> ## Remember the Things {: .info}
+> ### Remember the Things {: .info}
 >
 > - Environment variables are always strings
 > - a `?` suffix on the type arg turns an empty string into a `nil`
@@ -291,7 +291,7 @@ env!("BLANK", :module!)
 # ** (RuntimeError) Error converting variable BLANK to module!: non-empty value required
 ```
 
-> ## The Module Name Must Already Exist {: .warning}
+> ### The Module Name Must Already Exist {: .warning}
 >
 > One gotcha here is that **the module name must already exist as an atom**. Errors can pop up in test runs
 > because mock modules are defined at runtime, so their names never appear in compiled code. The fix is to
